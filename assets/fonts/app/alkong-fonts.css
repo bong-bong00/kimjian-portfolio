@@ -2,3 +2,6 @@
 @font-face{font-family:"Spoqa Han Sans Neo";font-style:normal;font-weight:400;font-display:swap;src:url(SpoqaHanSansNeo-Regular.woff2) format("woff2")}
 @font-face{font-family:"Spoqa Han Sans Neo";font-style:normal;font-weight:500;font-display:swap;src:url(SpoqaHanSansNeo-Medium.woff2) format("woff2")}
 @font-face{font-family:"Spoqa Han Sans Neo";font-style:normal;font-weight:600 900;font-display:swap;src:url(SpoqaHanSansNeo-Bold.woff2) format("woff2")}
+/* 목업(폰 화면) 전용: 같은 스포카 파일을 한 단계 가볍게 묶는다. 굵게(600~900) → Medium, 보통·중간(400~500) → Regular */
+@font-face{font-family:"Spoqa Mock";font-style:normal;font-weight:100 500;font-display:swap;src:url(SpoqaHanSansNeo-Regular.woff2) format("woff2")}
+@font-face{font-family:"Spoqa Mock";font-style:normal;font-weight:600 900;font-display:swap;src:url(SpoqaHanSansNeo-Medium.woff2) format("woff2")}
