@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>김지안 포트폴리오</title>
+<script src="reload-position.js"></script>
+<div id="top" style="position:absolute;top:0"></div>
+
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="assets/fonts/app/common-fonts.css">
+<style>
+/* Layout: 첫 화면은 프로젝트 표지가 흐르는 배경 위에 소개 글. 아래로 경험 → 프로젝트 4개 한 줄 → 도구 → 수상·학력
+   톤: 앱 서비스 소개 페이지. 흰/연회색 면 교차, 둥근 카드, 기본 포인트는 블루, 프로젝트 표시는 각 프로젝트 대표색과 앱 아이콘 */
+:root{
+  --bg:#FFFFFF; --gray:#F4F6F9; --card:#FFFFFF; --ink:#141922; --sub:#4C5664; --muted:#8A93A0; --line:#E4E8EE;
+  --blue:#2F6BFF; --blue-ink:#1F55E0;
+  --ploggo:#D4F04C; --ploggo-on:#1E2A05; --alkong:#2743EA; --alkong-on:#FFFFFF; --jobmoa:#7C5CFC; --jobmoa-on:#FFFFFF; --cheonha:#C9653F; --cheonha-on:#FFFFFF;
+  --shadow:0 1px 3px rgba(20,25,34,.05),0 16px 40px -18px rgba(20,25,34,.18);
+  --shadow-up:0 2px 6px rgba(20,25,34,.06),0 26px 50px -20px rgba(20,25,34,.28);
+  --f:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121419; --gray:#0C0E12; --card:#1B1E25; --ink:#F1F3F6; --sub:#B3BBC6; --muted:#7D8693; --line:#2A2E37;
+  --blue:#6A93FF; --blue-ink:#8DADFF; --alkong:#5B74FF; --jobmoa:#9B82FC; --cheonha:#DB7A55;
+  --shadow:0 1px 3px rgba(0,0,0,.3),0 16px 40px -18px rgba(0,0,0,.6); --shadow-up:0 2px 6px rgba(0,0,0,.35),0 26px 50px -20px rgba(0,0,0,.75); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121419; --gray:#0C0E12; --card:#1B1E25; --ink:#F1F3F6; --sub:#B3BBC6; --muted:#7D8693; --line:#2A2E37;
+  --blue:#6A93FF; --blue-ink:#8DADFF; --alkong:#5B74FF; --jobmoa:#9B82FC; --cheonha:#DB7A55;
+  --shadow:0 1px 3px rgba(0,0,0,.3),0 16px 40px -18px rgba(0,0,0,.6); --shadow-up:0 2px 6px rgba(0,0,0,.35),0 26px 50px -20px rgba(0,0,0,.75); color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.7 var(--f);-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:anywhere;letter-spacing:-.012em;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+a{color:inherit}
+h1,h2,h3,h4,p{margin:0}
+h1,h2,h3{text-wrap:balance;letter-spacing:-.035em}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:8px}
+.app{display:inline-block;flex:none;border-radius:24%;object-fit:cover;box-shadow:0 0 0 1px rgba(20,25,34,.08)}
+
+/* nav */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 82%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.nav .wrap{display:flex;align-items:center;gap:20px;height:64px}
+.logo{font-weight:900;font-size:19px;letter-spacing:-.04em;text-decoration:none}
+.logo i{font-style:normal;color:var(--blue)}
+.nav nav{display:flex;gap:2px;margin-left:auto}
+.nav nav a{text-decoration:none;font-size:14.5px;font-weight:600;color:var(--sub);padding:8px 12px;border-radius:10px}
+.nav nav a:hover{background:var(--gray);color:var(--ink)}
+
+/* hero */
+.hero{position:relative;overflow:hidden;margin-top:-64px;padding-top:64px}
+.backdrop{position:absolute;inset:-20px 0 0 24%;display:flex;flex-direction:column;justify-content:center;gap:0;pointer-events:none;user-select:none;
+  -webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 14%,#000 86%,transparent 100%);mask-image:linear-gradient(180deg,transparent 0%,#000 14%,#000 86%,transparent 100%)}
+.track{display:flex;width:max-content}
+/* 원색 표지가 흰 바탕에 딱 잘려 보이지 않도록 가장자리를 바탕으로 풀어준다 */
+.track div{width:clamp(320px,32vw,480px);aspect-ratio:16/9;flex:none;margin:14px 22px 14px 0;border-radius:20px;overflow:hidden;box-shadow:0 18px 40px -22px rgba(20,25,34,.35)}
+.track img{width:100%;height:100%;object-fit:cover;display:block}
+.track.t2{margin-left:-240px}
+@media (prefers-reduced-motion:no-preference){
+  .track{animation:drift 90s linear infinite}
+  .track.t2{animation-duration:120s}
+  @keyframes drift{to{transform:translateX(-50%)}}
+}
+.hero::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(90deg,var(--bg) 0%,var(--bg) 34%,color-mix(in srgb,var(--bg) 70%,transparent) 48%,color-mix(in srgb,var(--bg) 0%,transparent) 66%),
+             linear-gradient(0deg,var(--bg) 0%,color-mix(in srgb,var(--bg) 0%,transparent) 18%)}
+.hero .wrap{position:relative;z-index:1;padding-block:130px 150px}
+.face{display:block;width:120px;height:120px;border-radius:50%;object-fit:cover;object-position:50% 24%;border:4px solid var(--bg);box-shadow:var(--shadow)}
+.hero h1{font-size:clamp(36px,5.2vw,58px);line-height:1.25;font-weight:900;margin-top:22px}
+.hero h1 em{font-style:normal;color:var(--blue)}
+.hero .lead{margin-top:22px;font-size:18px;line-height:1.75;color:var(--sub);max-width:26em}
+
+/* section head with 3D pictogram */
+.band{background:var(--gray)}
+.sec{padding-block:96px;scroll-margin-top:64px}
+.sh{display:flex;gap:14px;align-items:center;margin-bottom:36px}
+.badge{flex:none;display:grid;place-items:center;width:64px;height:64px;border-radius:20px;background:linear-gradient(145deg,var(--b1),var(--b2));box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 10px 20px -12px rgba(20,25,34,.35)}
+.badge img{width:42px;height:42px;filter:drop-shadow(0 4px 6px rgba(20,25,34,.18))}
+.b-y{--b1:#FFF6D6;--b2:#FFE49A}.b-b{--b1:#E3ECFF;--b2:#BFD3FF}.b-g{--b1:#E6F6EC;--b2:#BDE8CC}.b-o{--b1:#FFEEDD;--b2:#FFD2A8}.b-p{--b1:#F0EAFF;--b2:#D6C8FF}
+.sh h2{font-size:clamp(26px,3.2vw,36px);font-weight:900;line-height:1.3}
+
+/* 경험 */
+.ways{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.way{background:var(--card);border-radius:24px;padding:28px;box-shadow:var(--shadow);min-width:0;display:flex;flex-direction:column}
+.way h3{font-size:19px;font-weight:800;line-height:1.4}
+.way p{margin-top:10px;font-size:15.5px;color:var(--sub);line-height:1.75}
+.way .from{display:inline-flex;align-items:center;gap:8px;margin-top:auto;padding-top:20px;font-size:14px;font-weight:700;color:var(--sub)}
+.way .from .app{width:24px;height:24px}
+
+/* 프로젝트 */
+.projects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:30px;row-gap:48px}
+.proj{display:flex;flex-direction:column;text-decoration:none;color:inherit;min-width:0}
+.cover{aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:var(--gray);box-shadow:var(--shadow);transition:transform .35s cubic-bezier(.2,.8,.25,1),box-shadow .35s ease}
+.cover img{width:100%;height:100%;object-fit:cover;display:block}
+a.proj:hover .cover,a.proj:focus-visible .cover{transform:translateY(-8px)}
+a.proj:hover .cover,a.proj:focus-visible .cover{box-shadow:var(--shadow-up)}
+.pi{padding:16px 4px 0}
+.pi .nm{display:flex;align-items:center;gap:10px;font-size:19px;font-weight:800;letter-spacing:-.03em}
+.pi .nm .app{width:30px;height:30px}
+.pi p{margin-top:8px;font-size:14.5px;color:var(--sub);line-height:1.55}
+.pi .m{display:block;margin-top:8px;font-size:13px;color:var(--muted);font-weight:500}
+.pi .go{display:inline-block;margin-top:10px;font-size:13.5px;font-weight:700;color:var(--blue-ink)}
+.pi .go.off{color:var(--muted)}
+
+/* Portfolio refinement */
+.project-heading{flex-wrap:wrap;gap:12px 16px}
+.project-hint{font-size:13px;font-weight:500;color:var(--muted);letter-spacing:-.015em;margin-left:4px}
+#projects{position:relative}
+#projects::before{content:"";position:absolute;right:0;top:110px;width:260px;height:260px;background:radial-gradient(circle,color-mix(in srgb,var(--blue) 7%,transparent),transparent 70%);pointer-events:none;z-index:-1}
+.projects{position:relative}
+.proj{padding:0 0 8px}
+.cover{border-radius:24px;outline:1px solid color-mix(in srgb,var(--line) 70%,transparent);outline-offset:-1px;box-shadow:0 10px 32px -18px rgba(20,25,34,.24)}
+.cover img{transition:transform .5s cubic-bezier(.2,.8,.25,1)}
+a.proj:hover .cover img,a.proj:focus-visible .cover img{transform:scale(1.025)}
+.pi{padding:20px 6px 0}
+.pi .nm{font-size:21px}
+.pi p{font-size:15px;line-height:1.7;margin-top:10px}
+.pi .m{margin-top:10px}
+.nav{border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+.way{border:1px solid var(--line);box-shadow:0 8px 28px -22px rgba(20,25,34,.18)}
+.tool{border:1px solid var(--line);background:color-mix(in srgb,var(--gray) 85%,var(--card))}
+.tool .chips span{border:1px solid var(--line)}
+@media(max-width:560px){.project-hint{flex-basis:100%;margin-left:0;padding-left:0;font-size:12px}.projects{row-gap:32px}}
+/* 도구 */
+.tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.tool{background:var(--gray);border-radius:24px;padding:28px;min-width:0}
+.tool h3{font-size:19px;font-weight:800}
+.tool .chips{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 16px}
+.tool .chips span{font-size:13.5px;font-weight:700;padding:7px 11px;border-radius:10px;background:var(--card)}
+.tool p{font-size:15px;color:var(--sub);line-height:1.7}
+
+/* 수상·학력 */
+.exp{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:24px;align-items:start}
+.timeline{background:var(--card);border-radius:24px;box-shadow:var(--shadow);padding:10px 28px}
+.ti{display:grid;grid-template-columns:90px minmax(0,1fr);gap:18px;padding:20px 0;border-top:1px solid var(--line)}
+.ti:first-child{border-top:0}
+.ti time{font-size:14px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:2px}
+.ti b{display:block;font-size:16px;font-weight:700;line-height:1.5}
+.pt{display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:12.5px;font-weight:800;padding:4px 10px;border-radius:8px;background:var(--c);color:var(--on)}
+.pt .app{width:18px;height:18px;border-radius:5px;box-shadow:none}
+.pt.etc{background:var(--gray);color:var(--sub)}
+.edu{display:grid;gap:14px}
+.edu-h{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:800;margin:0 0 2px}
+.edu-h .badge{width:44px;height:44px;border-radius:14px}.edu-h .badge img{width:28px;height:28px}
+.edu div.e{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:24px 26px}
+.edu time{font-size:13.5px;color:var(--muted);font-weight:600}
+.edu b{display:block;font-size:19px;font-weight:800;margin-top:6px}
+.edu span{color:var(--sub);font-size:15px}
+
+footer{padding-block:40px calc(40px + env(safe-area-inset-bottom,0px));color:var(--muted);font-size:14px}
+footer .wrap{display:flex;justify-content:flex-end}
+footer a{text-decoration:none}
+
+@media (max-width:1000px){
+  .projects{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:40px}
+  .ways,.tools{grid-template-columns:1fr}
+  .exp{grid-template-columns:1fr}
+}
+@media (max-width:760px){
+  .backdrop{inset:-40px -30% -20px -10%}
+  .track div{width:320px}
+  .hero::after{background:linear-gradient(180deg,color-mix(in srgb,var(--bg) 40%,transparent) 0%,var(--bg) 70%)}
+  .hero .wrap{padding-block:80px 72px}
+  .nav nav{display:none}
+}
+@media (max-width:560px){
+  .projects{grid-template-columns:1fr}
+  .ti{grid-template-columns:1fr;gap:4px}
+  .sec{padding-block:72px}
+  .timeline{padding:4px 20px}
+  .badge{width:54px;height:54px;border-radius:17px}.badge img{width:36px;height:36px}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.proj,.cover{transition:none}}
+</style>
+<link rel="stylesheet" href="assets/fonts/app/gothic-a1.css">
+<link rel="stylesheet" href="editorial.css">
+
+<header class="nav">
+  <div class="wrap">
+    <a class="logo" href="#top">김지안 <small>(2000.07.09)</small></a>
+    
+    <nav aria-label="섹션"><a href="#projects">프로젝트</a><a href="#approach">기획과 구현</a><a href="#awards">수상·학력</a></nav>
+  </div>
+</header>
+
+<main>
+  <section class="intro" aria-label="소개">
+    <div class="wrap intro-layout">
+      <div class="intro-copy">
+        <div class="intro-glow" aria-hidden="true"><span class="tint"></span><span class="ring"></span><span class="ring"></span></div>
+        <h1><span class="intro-line">아이디어를 화면으로 옮기고,</span><span class="intro-line">직접 구현하며 답을 찾습니다.</span></h1>
+        <p class="intro-description">기획자를 꿈꾸면서, AI를 활용하여 기획 초안의 회전 속도를 높이고 Figma로 설계한 화면을 직접 구현까지 이어가며 기획의 타당성을 검증해왔습니다. 기획과 개발까지 전 과정을 거쳐가며, 아이디어와 실제 화면 사이의 거리를 좁히는 데 무엇이 필요한지 몸으로 익혔습니다.</p>
+      </div>
+      <figure class="intro-portrait"><img src="thumbs/profile.jpg" alt="김지안 프로필 사진"></figure>
+    </div>
+  </section>
+
+  <section class="wrap sec" id="projects">
+    <div class="sh project-heading"><span class="badge b-b"><img src="icons/rocket.png" alt=""></span><span class="section-index">01</span><h2><img class="section-pictogram" src="icons/rocket.png" alt="">프로젝트</h2></div>
+    <div class="projects" id="project-list"></div>
+  </section>
+
+  <div class="band">
+    <section class="wrap sec" id="approach">
+      <div class="sh"><h2><img class="section-pictogram" src="icons/tools.png" alt="">기획과 구현</h2></div>
+      <div class="ways" id="ways-list"></div>
+      <div class="chapter-tools"><h3 class="tools-heading">작업에 사용하는 도구</h3><div class="tools" id="tool-list"></div></div>
+    </section>
+  </div>
+
+  <section class="wrap sec" id="awards">
+    <div class="sh"><span class="badge b-o"><img src="icons/trophy.png" alt=""></span><span class="section-index">04</span><h2><img class="section-pictogram" src="icons/trophy.png" alt="">차근차근 쌓아 온 경험</h2></div>
+    <div class="exp">
+      <div class="timeline" id="timeline"></div>
+      <div class="edu">
+        <div class="edu-h"><span class="badge b-p"><img src="icons/cap.png" alt=""></span>학력</div>
+        <div id="edu" style="display:contents"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap"><span class="footer-name">김지안 포트폴리오</span><a href="#top">처음으로 ↑</a></div></footer>
+
+<script>
+/* ───────────── 내용은 여기서 고칩니다 ───────────── */
+const PROJECTS = [
+  { key: "ploggo", name: "Ploggo", icon: "icons/app_ploggo.png", line: "CCTV 공공데이터 기반 플로깅 코스 추천 앱", period: "2025.03 – 2026.11.10", role: "UX/UI, 앱 플로우 설계",
+    cover: "thumbs/ploggo.jpg", site: "projects/ploggo.html" },
+  { key: "alkong", name: "알콩약콩", icon: "icons/app_alkong.png", line: "처방전을 찍으면 복약 일정을 만들어 주는 고령자용 앱", period: "2026.03 – 2026.10.06", role: "UX/UI, 앱 플로우 설계",
+    cover: "thumbs/alkong-clean.png", site: "projects/alkong.html" },
+  { key: "cheonha", name: "천하유적", icon: "icons/app_cheonha.png", line: "안내판 사진으로 유적을 찾아 설명해 주는 경주 관광 앱", period: "2026.03 – 2026.07", role: "Flutter 개발, UX/UI",
+    cover: "thumbs/cheonha-updated.png", site: "projects/cheonha.html" },
+  { key: "jobmoa", name: "잡모아", icon: "icons/app_jobmoa.png", line: "회사 지원 현황과 마감 일정을 관리하는 데스크톱 애플리케이션", period: "2026.07", role: "기획, 디자인, WPF 개발",
+    cover: "thumbs/jobmoa-hd.webp", site: "projects/jobmore.html" }
+];
+
+const WAYS = [
+  { t: "공공데이터 활용", p: "인천 무단투기 단속 CCTV 위치 데이터로 쓰레기가 많은 구역을 찾고, 그 구역을 지나는 플로깅 코스를 추천하도록 기획했습니다.", projects: ["ploggo"] },
+  { t: "고령 사용자 화면 설계", p: "고령 사용자의 시인성과 조작 편의성을 고려해 글자와 버튼 크기를 설계하고, 약의 색상·형태를 식별 단서로 활용해 복약 정보를 구분하도록 구성했습니다.", projects: ["alkong"] },
+  { t: "기획한 화면 직접 구현", p: "천하유적의 모바일 앱 화면 전체를 Flutter로 구현하고, 잡모아는 기획·화면 설계부터 WPF 기반 Windows 데스크톱 애플리케이션 개발까지 단독으로 수행했습니다.", projects: ["cheonha", "jobmoa"] }
+];
+
+const TOOLS = [
+  { t: "기획 · 설계", chips: ["Figma", "Figma AI"], p: "화면설계서, 컴포넌트, 프로토타입을 만듭니다." },
+  { t: "AI", chips: ["Claude", "Gemini", "ChatGPT", "Midjourney", "Dreamina"], p: "기획 초안 정리와 앱 아이콘·캐릭터 제작에 씁니다. 서비스 기능에는 Gemini API를 사용했습니다." },
+  { t: "개발", chips: ["Flutter", "WPF", "WinForms", "SQL", "GitHub", "VS Code"], p: "Flutter 모바일 앱과 WPF 기반 Windows 데스크톱 애플리케이션을 개발해 봤고, 팀 작업은 GitHub로 합니다." }
+];
+
+const AWARDS = [
+  ["2026.11", "ACK 2026 학부생 논문경진대회 논문 채택 · 구두 발표 (공동저자)", "ploggo"],
+  ["2026.04", "2026 한이음 드림업 사업 선정 (창의도전형)", "ploggo"],
+  ["2026.04", "2026 관광데이터 활용 공모전 예비심사(기획) 통과", "cheonha"],
+  ["2026.03", "제6회 전국 대학교 이그나이트 스토리텔링 경진대회 입상", "alkong"],
+  ["2025.07", "제11회 인천광역시 공공데이터 활용 경진대회 우수상", "ploggo"],
+  ["2025.05", "AI로 만드는 인천 미래 공모전 참가", ""]
+];
+
+const EDU = [
+  ["2025.03 – 2026.11.10", "한국폴리텍대학", "컴퓨터공학"],
+  ["2019.03 – 2023.02", "유한대학교", "보건복지학"]
+];
+
+/* ───────────── 렌더링 ───────────── */
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const $ = id => document.getElementById(id);
+const P = Object.fromEntries(PROJECTS.map(p => [p.key, p]));
+const col = k => `--c:var(--${k});--on:var(--${k}-on)`;
+const la = u => /^https?:/.test(u) ? ` target="_blank" rel="noopener"` : "";
+const icon = k => `<img class="app" src="${esc(P[k].icon)}" alt="">`;
+
+$("ways-list").innerHTML = WAYS.map(w => `
+  <article class="way"><h3>${esc(w.t)}</h3><p>${esc(w.p)}</p>
+  <span class="from">${w.projects.map(k => `<span class="from-project">${icon(k)}${esc(P[k].name)}</span>`).join("")}</span></article>`).join("");
+
+const projectTitles = {
+  ploggo: "걷기 좋은 길에서,<br>쓰레기를 줍는 길로.",
+  alkong: "복잡한 약 관리도<br>한눈에, 쉽게.",
+  jobmoa: "흩어진 지원 현황을<br>한곳에서 간편하게.",
+  cheonha: "안내판 사진 한 장으로<br>가까워지는 경주의 역사."
+};
+$("project-list").innerHTML = PROJECTS.map((p, i) => `
+  <article class="work ${esc(p.key)}">
+    <div class="work-top"><span class="work-number">0${i + 1}</span><h3>${icon(p.key)}${esc(p.name)}</h3><span class="work-type">${p.key === "jobmoa" ? "Windows 데스크톱" : "모바일 서비스"}</span></div>
+    ${p.site ? `<a class="work-image" href="${esc(p.site)}"${la(p.site)} aria-label="${esc(p.name)} 상세 페이지">` : '<div class="work-image" tabindex="0" aria-label="천하유적 목업 미리보기">'}
+      <img src="${p.key === "alkong" ? "thumbs/alkong-bg-hd.webp" : p.key === "cheonha" ? "thumbs/cheonha-bg-hd.webp" : esc(p.cover)}" alt="${esc(p.name)} 소개 이미지">
+      ${p.key === "cheonha" ? `<span class="cheonha-mockups"><img class="cheonha-side cheonha-left" src="thumbs/cheonha-sides-hd.webp" alt="" aria-hidden="true"><img class="cheonha-side cheonha-right" src="thumbs/cheonha-sides-hd.webp" alt="" aria-hidden="true"><img class="cheonha-center-front" src="thumbs/cheonha-center-hd.webp" alt="" aria-hidden="true"></span>` : ""}
+      ${p.key === "alkong" ? `<svg class="alkong-heartbeat" viewBox="0 0 240 120" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="alkong-pulse-fade"><stop stop-color="#3558f5" stop-opacity="0"/><stop offset=".22" stop-color="#3558f5" stop-opacity=".7"/><stop offset=".78" stop-color="#3558f5" stop-opacity=".7"/><stop offset="1" stop-color="#3558f5" stop-opacity="0"/></linearGradient></defs><path d="M0 60 H240"/></svg>` : ""}
+      ${p.key === "alkong" ? `<span class="alkong-device" aria-hidden="true"><img class="alkong-device-art" src="${esc(p.cover)}" alt=""></span>` : ""}
+    ${p.site ? '</a>' : '</div>'}
+    <div class="work-bottom"><div><p>${esc(p.line)}</p><span>${esc(p.role)} · ${esc(p.period)}</span></div>${p.site ? "" : '<span class="work-pending">상세 준비 중</span>'}</div>
+  </article>`).join("");
+
+const toolIcons = {Figma:"figma.svg", "Figma AI":"figma.svg", Claude:"claude.svg", Gemini:"gemini.png", ChatGPT:"chatgpt.svg", Midjourney:"midjourney.png", Dreamina:"dreamina.png", Flutter:"flutter.png", WPF:"dotnet.svg", WinForms:"dotnet.svg", SQL:"database.svg", GitHub:"github.svg", "VS Code":"vscode.png"};
+$("tool-list").innerHTML = TOOLS.map(t => `
+  <article class="tool"><h3>${esc(t.t)}</h3><div class="chips">${t.chips.map(c => `<span><img src="assets/tool-icons/${toolIcons[c]}" alt="" aria-hidden="true">${esc(c)}</span>`).join("")}</div></article>`).join("");
+
+$("timeline").innerHTML = AWARDS.map(([d,t,k]) => `<div class="ti"><time>${esc(d)}</time><div><b>${esc(t)}</b>${k ? `<span class="pt" style="${col(k)}">${esc(P[k].name)}</span>` : `<span class="pt etc">개인</span>`}</div></div>`).join("");
+$("edu").innerHTML = EDU.map(([d,s,m]) => `<div class="e"><time>${esc(d)}</time><b>${esc(s)}</b><span>${esc(m)}</span></div>`).join("");
+</script>
+
+<script src="home-hover.js"></script>
+<script src="heartbeat-hover.js"></script>
+<script src="jobmoa-hover.js"></script>
+<script src="heading-motion.js"></script>
+<script src="intro-motion.js"></script>
+<script src="nav-spy.js"></script>
+

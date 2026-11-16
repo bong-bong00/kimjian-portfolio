@@ -1,0 +1,1954 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html><head><script>
+/* 상세 페이지는 언제 열어도 맨 위(첫 화면)에서 시작한다.
+   브라우저나 미리보기 창이 이전 스크롤 위치를 이어 붙이는 경우를 막고,
+   사용자가 먼저 스크롤을 시작했다면 더는 끌어올리지 않는다. */
+(function () {
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  var keepHash = location.hash && location.hash !== '#top';
+  var userMoved = false;
+  ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(function (t) {
+    addEventListener(t, function () { userMoved = true; }, { passive: true, once: true });
+  });
+  /* 부드러운 스크롤 설정이 있어도 '올라가는 모습'이 보이지 않게 즉시 이동 */
+  function toTop() {
+    if (keepHash || userMoved || window.scrollY === 0) return;
+    var de = document.documentElement, prev = de.style.scrollBehavior;
+    de.style.scrollBehavior = 'auto';
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    de.style.scrollBehavior = prev;
+  }
+  toTop();
+  addEventListener('DOMContentLoaded', toTop);
+  addEventListener('load', function () { toTop(); setTimeout(toTop, 80); setTimeout(toTop, 400); });
+  addEventListener('pageshow', toTop);
+})();
+</script>
+<meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><link rel="stylesheet" href="../assets/fonts/app/jobmore-fonts.css">
+<style>
+/* 잡모아 글꼴: 채용 플랫폼 원티드가 만든 Wanted Sans. 획 굵기가 고르고 작은 글씨도 또렷하다 */
+:root, :root:root { --font: "Wanted Sans", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; }
+</style>
+</head><body>
+<script>
+if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+var reloadAtTop = performance.getEntriesByType("navigation").some(function (entry) { return entry.type === "reload"; });
+if (reloadAtTop) {
+  history.replaceState(null, "", location.pathname + location.search);
+  window.scrollTo({top:0,left:0,behavior:"instant"});
+  window.addEventListener("pageshow", function () {
+    window.scrollTo({top:0,left:0,behavior:"instant"});
+  }, {once:true});
+}
+</script>
+<title>잡모아 JobMore</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="../assets/fonts/app/common-fonts.css">
+<meta name="description" content="흩어진 지원 현황을 한 곳에 모아서, 합격은 더. 취업 지원 관리 데스크톱 앱 잡모아">
+
+
+
+<style>
+/* 레이아웃: 한 섹션에 한 메시지. 설명은 글이 아니라 그 기능이 실제로 보이는 앱 화면으로 한다.
+   강조는 밑줄·형광펜 대신 대표색 글자로만. 섹션 머리표는 앱의 단계 배지를 그대로 가져왔다. */
+:root {
+  --sig: #7C5CFC;
+  --sig-deep: #6A44F0;
+  --sig-mid: #8E7BF2;
+  --sig-soft: #F0ECFE;
+  --bg: #FFFFFF;
+  --soft: #F5F6FC;
+  --line: #E4E8F2;
+  --line-2: #EFF1F8;
+  --fg: #171E33;
+  --fg-2: #5A6480;
+  --fg-3: #8791A8;
+  --dim: #B4BBCC;
+  --band: #241C52;
+  --band-fg: #F2EFFC;
+  --band-2: #A99FD4;
+  --band-card: #312866;
+  --band-line: #443A7E;
+  --hot: #D74949;
+  --good: #27A05D;
+  --rej: #E0524F;
+  --past: #9EA3B8;
+  --btn: #171E33;
+  --btn-fg: #FFFFFF;
+  --ghost: #EEF0F7;
+  --chrome: #F7F8FC;
+  --shadow: 0 30px 70px rgba(42, 28, 102, .18);
+  --shadow-s: 0 12px 30px rgba(42, 28, 102, .10);
+  --font: "Wanted Sans", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  --navbg: rgba(255, 255, 255, .9);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --sig: #9D85FD; --sig-deep: #B4A1FE; --sig-mid: #8E7BF2; --sig-soft: #252049;
+    --bg: #0F131E; --soft: #161C29; --line: #272F3E; --line-2: #1C2330;
+    --fg: #ECEFF6; --fg-2: #A8B2C4; --fg-3: #7F8A9C; --dim: #495364;
+    --band: #1A1440; --band-fg: #F2EFFC; --band-2: #A99FD4;
+    --band-card: #241C52; --band-line: #3A3170;
+    --hot: #F07472; --good: #45BE7D; --rej: #EC7C79; --past: #717B90;
+    --btn: #9D85FD; --btn-fg: #15102A; --ghost: #1E2534; --chrome: #1B2230;
+    --shadow: 0 30px 70px rgba(0, 0, 0, .6); --shadow-s: 0 12px 30px rgba(0, 0, 0, .45);
+    --navbg: rgba(15, 19, 30, .9);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --sig: #9D85FD; --sig-deep: #B4A1FE; --sig-mid: #8E7BF2; --sig-soft: #252049;
+  --bg: #0F131E; --soft: #161C29; --line: #272F3E; --line-2: #1C2330;
+  --fg: #ECEFF6; --fg-2: #A8B2C4; --fg-3: #7F8A9C; --dim: #495364;
+  --band: #1A1440; --band-fg: #F2EFFC; --band-2: #A99FD4;
+  --band-card: #241C52; --band-line: #3A3170;
+  --hot: #F07472; --good: #45BE7D; --rej: #EC7C79; --past: #717B90;
+  --btn: #9D85FD; --btn-fg: #15102A; --ghost: #1E2534; --chrome: #1B2230;
+  --shadow: 0 30px 70px rgba(0, 0, 0, .6); --shadow-s: 0 12px 30px rgba(0, 0, 0, .45);
+  --navbg: rgba(15, 19, 30, .9);
+  color-scheme: dark;
+}
+
+html { scroll-padding-top: 76px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font);
+  font-size: 17px; line-height: 1.78; word-break: keep-all; overflow-wrap: anywhere;
+  -webkit-font-smoothing: antialiased;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--bg); }
+h1, h2, h3, h4, p, ul, ol, dl, dd, figure, table { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+h1, h2, h3, h4 { text-wrap: balance; letter-spacing: -.04em; }
+p { text-wrap: pretty; word-break: keep-all; overflow-wrap: break-word; }
+a { color: inherit; }
+img { display: block; max-width: 100%; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--sig); outline-offset: 3px; border-radius: 8px; }
+
+.wrap {
+  max-width: 1120px; margin-inline: auto;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+}
+.sec { padding-block: clamp(36px, 4vw, 58px); }
+.band { background: var(--band); color: var(--band-fg); }
+.soft { background: var(--soft); }
+
+h1 { font-size: clamp(33px, 4.9vw, 55px); font-weight: 900; line-height: 1.26; }
+h2 { font-size: clamp(27px, 4vw, 47px); font-weight: 800; line-height: 1.28; }
+h3 { font-size: clamp(20px, 2.4vw, 29px); font-weight: 800; line-height: 1.38; }
+h4 { font-size: 18px; font-weight: 700; line-height: 1.5; letter-spacing: -.025em; }
+.hl { color: var(--sig); }
+.band .hl { color: #C6B5FF; }
+
+.lead { color: var(--fg-2); font-size: 17.5px; max-width: 31em; }
+.band .lead, .band .body { color: var(--band-2); }
+.body { color: var(--fg-2); max-width: 33em; }
+.cap { font-size: 14px; color: var(--fg-3); }
+.band .cap { color: var(--band-2); }
+.lead b, .body b, .cap b { color: var(--fg); font-weight: 700; }
+.band .lead b, .band .body b, .band .cap b { color: var(--band-fg); }
+
+.sec-head { margin-bottom: clamp(26px, 3.2vw, 44px); }
+.sub-head { margin: clamp(36px, 4vw, 58px) 0 20px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 54px; padding: 0 26px; border-radius: 14px; border: 0;
+  background: var(--btn); color: var(--btn-fg);
+  font-weight: 700; font-size: 16.5px; text-decoration: none; cursor: pointer;
+  transition: transform .15s ease;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn.sig { background: var(--sig); color: #fff; }
+.btn.ghost { background: var(--ghost); color: var(--fg); }
+.cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+
+/* ── 내비게이션 ── */
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: var(--navbg); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+.nav-in { display: flex; align-items: center; gap: 16px; min-height: 62px; padding-block: 8px; }
+.brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 900; font-size: 19px; letter-spacing: -.045em; text-decoration: none; }
+.brand img { width: 30px; height: 30px; flex: none; }
+.nav-links { display: flex; gap: 2px; margin-left: auto; }
+.nav-links a { font-size: 14.5px; font-weight: 600; color: var(--fg-2); text-decoration: none; padding: 8px 11px; border-radius: 10px; }
+.nav-links a:hover { background: var(--ghost); color: var(--fg); }
+.nav .btn { min-height: 42px; padding: 0 16px; font-size: 14.5px; border-radius: 11px; }
+@media (max-width: 940px) { .nav-links { display: none; } .nav .btn { margin-left: auto; } }
+
+/* ── 히어로 ── */
+.hero-layout { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 36px; align-items: center; }
+.hero-copy { min-width: 0; }
+.hero-copy h1 { font-size: clamp(32px, 3.4vw, 46px); }
+.hero-copy .lead { font-size: 16px; }
+.hero-preview { min-width: 0; width: 100%; }
+.hero-preview .hero-win { width: 1100px; transform-origin: top left; }
+@media (max-width: 800px) {
+  .hero-layout { grid-template-columns: minmax(0, 1fr); gap: 30px; }
+  .hero-copy { max-width: 36em; }
+}
+/* 축소된 첫 화면에서도 데스크톱 앱의 구성을 유지한다. */
+.hero-win .win-body { flex-direction: row; }
+.hero-win .rail { display: flex; flex-direction: column; width: 144px; flex: 0 0 144px; }
+.hero-win .panels { grid-template-columns: minmax(0, 1fr) 274px !important; }
+.hero-win { box-shadow: var(--shadow); }
+.meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px 26px; margin-top: clamp(22px, 2.6vw, 32px); }
+.meta li { border-top: 1px solid var(--line); padding-top: 12px; font-size: 14px; color: var(--fg-2); }
+.meta li span { display: block; font-size: 11.5px; font-weight: 700; color: var(--sig); margin-bottom: 2px; }
+.det .in.memo { min-height: 38px; line-height: 1.6; }
+
+/* ── 앱 창 재현 ── */
+.win { border-radius: 16px; overflow: hidden; background: var(--bg); color: var(--fg); box-shadow: var(--shadow-s); border: 1px solid var(--line); min-width: 0; }
+.win-bar { display: flex; align-items: center; gap: 9px; padding: 9px 14px; background: var(--chrome); border-bottom: 1px solid var(--line); font-size: 12px; font-weight: 700; color: var(--fg-3); }
+.win-bar .ctl { margin-left: auto; letter-spacing: .3em; font-weight: 400; color: var(--dim); }
+.win-body { display: flex; background: var(--soft); min-width: 0; }
+
+.rail { width: 136px; flex: none; background: #7C5CFC; padding: 15px 11px; display: flex; flex-direction: column; }
+.rail .lg { display: flex; align-items: center; gap: 9px; padding: 2px 5px 16px; color: #fff; }
+.rail .lg img { width: 26px; height: 26px; flex: none; }
+.rail .lg b { font-size: 14px; font-weight: 800; letter-spacing: -.04em; display: block; line-height: 1.3; }
+.rail .lg span { font-size: 9px; color: #D7CBFD; letter-spacing: .08em; }
+.rail .it { display: block; padding: 9px 12px; border-radius: 9px; margin-bottom: 2px; font-size: 13px; font-weight: 600; color: #E6DEFD; }
+.rail .it.on { background: #fff; color: #6A44F0; font-weight: 800; }
+.rail .ft { margin-top: auto; padding: 14px 6px 0; font-size: 10px; color: #CFC2FB; line-height: 1.6; }
+@media (max-width: 720px) {
+  .win-body { flex-direction: column; }
+  .rail { width: auto; flex-direction: row; flex-wrap: wrap; gap: 3px; padding: 8px; }
+  .rail .lg, .rail .ft { display: none; }
+  .rail .it { flex: 1 1 auto; text-align: center; padding: 6px 8px; margin: 0; font-size: 12px; }
+}
+
+.pane { flex: 1 1 auto; min-width: 0; padding: 16px; }
+.pane .ttl { font-size: 17px; font-weight: 800; letter-spacing: -.04em; margin-bottom: 12px; }
+
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.tiles.five { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.tiles.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.tile { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 11px 13px; }
+.tile span { display: block; font-size: 10.5px; color: var(--fg-3); min-height: 2.7em; line-height: 1.4; font-weight: 600; }
+.tile b { font-size: 22px; font-weight: 800; letter-spacing: -.05em; font-variant-numeric: tabular-nums; }
+@media (max-width: 720px) { .tiles, .tiles.five { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.dbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 11px 0; }
+.dbar .lg2 { display: flex; align-items: center; gap: 10px; font-size: 10.5px; color: var(--fg-3); font-weight: 600; }
+.dbar .lg2 em { font-style: normal; display: inline-flex; align-items: center; gap: 4px; }
+.dbar .lg2 i { width: 8px; height: 8px; border-radius: 50%; display: block; }
+.dbar .bt { margin-left: auto; display: flex; gap: 6px; }
+.dbar .bt span { font-size: 11px; font-weight: 700; border-radius: 9px; padding: 6px 12px; border: 1px solid var(--line); background: var(--bg); }
+.dbar .bt .p { background: #7C5CFC; border-color: #7C5CFC; color: #fff; }
+
+.panels { display: grid; grid-template-columns: minmax(0, 1fr) 268px; gap: 10px; }
+@media (max-width: 960px) { .panels { grid-template-columns: minmax(0, 1fr); } }
+.card { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 13px; min-width: 0; }
+.card .h { font-size: 12.5px; font-weight: 800; margin-bottom: 11px; letter-spacing: -.02em; }
+.card .f { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line-2); font-size: 10.5px; color: var(--fg-3); line-height: 1.7; }
+
+/* 목록 표 */
+.lbar { display: flex; gap: 7px; margin-bottom: 10px; }
+.lbar .sch { flex: 1 1 auto; min-width: 0; border: 1px solid var(--line); border-radius: 9px; padding: 7px 11px; font-size: 11.5px; color: var(--fg-3); background: var(--bg); }
+.lbar .sel { flex: none; border: 1px solid var(--line); border-radius: 9px; padding: 7px 11px; font-size: 11.5px; color: var(--fg-2); background: var(--bg); display: flex; gap: 14px; align-items: center; }
+.lbar .sel i { font-style: normal; color: var(--dim); font-size: 9px; }
+.ltab-s { overflow-x: auto; }
+.ltab { width: 100%; border-collapse: collapse; font-size: 12px; }
+.ltab th { text-align: left; font-size: 10.5px; font-weight: 700; color: var(--fg-3); padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.ltab td { padding: 9px 8px; border-bottom: 1px solid var(--line-2); white-space: nowrap; }
+.ltab tr:last-child td { border-bottom: 0; }
+.ltab tr.on td { background: var(--sig-soft); }
+.ltab tr.off td { color: var(--dim); }
+.ltab .co { font-weight: 700; }
+.ltab .jb { color: var(--fg-2); }
+.ltab tr.off .co, .ltab tr.off .jb { color: var(--dim); }
+.ltab .lk { color: var(--dim); text-align: right; }
+.bdg { display: inline-block; font-size: 10.5px; font-weight: 700; color: #fff; border-radius: 7px; padding: 3px 9px; white-space: nowrap; }
+.dpill { display: inline-block; font-size: 10.5px; font-weight: 800; color: #fff; border-radius: 7px; padding: 3px 8px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.dnote { font-size: 10.5px; color: var(--fg-3); margin-left: 6px; }
+
+/* 상세 / 편집 */
+.det { display: grid; gap: 10px; align-content: start; }
+.det .hd { display: flex; align-items: center; }
+.det .hd b { font-size: 12.5px; font-weight: 800; }
+.det .hd span { margin-left: auto; font-size: 10.5px; font-weight: 700; color: var(--rej); background: rgba(224,82,79,.12); border-radius: 7px; padding: 3px 10px; }
+.det .fd { display: grid; gap: 4px; }
+.det .fd > span { font-size: 10px; color: var(--fg-3); font-weight: 600; }
+.det .fd .in { border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; font-size: 11.5px; background: var(--bg); }
+.det .fd .in.sel { display: flex; align-items: center; }
+.det .fd .in.sel i { margin-left: auto; font-style: normal; color: var(--dim); font-size: 9px; }
+.det .fd .in.focus { border-color: var(--sig); }
+.det .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.dots { display: flex; gap: 7px; }
+.dots i { width: 19px; height: 19px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 10px; font-style: normal; }
+.stepper { display: flex; align-items: center; gap: 3px; background: var(--sig-soft); border-radius: 9px; padding: 6px 7px; flex-wrap: nowrap; overflow-x: auto; }
+.stepper span { font-size: 10.5px; font-weight: 700; color: var(--sig-deep); border-radius: 6px; padding: 3px 7px; white-space: nowrap; flex: none; }
+.stepper span.on { background: #6A44F0; color: #fff; }
+.stepper i { font-style: normal; color: var(--sig-mid); font-size: 9px; flex: none; }
+.mvbtn { display: flex; gap: 7px; }
+.mvbtn button { flex: 1 1 0; border: 1px solid var(--line); background: var(--bg); border-radius: 9px; padding: 8px 4px; font-size: 11.5px; font-weight: 700; cursor: pointer; }
+.mvbtn button:hover { border-color: var(--sig); color: var(--sig); }
+.mvbtn .p { background: #7C5CFC; border-color: #7C5CFC; color: #fff; }
+.mvbtn .p:hover { color: #fff; }
+.mvbtn button[disabled] { opacity: .4; cursor: default; }
+.mvbtn button[disabled]:hover { border-color: var(--line); color: inherit; }
+.mvbtn .p[disabled]:hover { color: #fff; }
+
+/* 이력 */
+.hist { display: grid; }
+.hist li { display: grid; grid-template-columns: 14px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 7px 0; font-size: 12.5px; color: var(--dim); border-bottom: 1px solid var(--line-2); }
+.hist li:last-child { border-bottom: 0; }
+.hist li i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); justify-self: center; }
+.hist li.on { color: var(--fg); font-weight: 600; }
+.hist li.on i { background: var(--sig); }
+.hist li em { font-style: normal; font-size: 11px; color: var(--fg-3); font-weight: 500; }
+
+/* 달력 */
+.cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.cal .wd { text-align: center; font-size: 10px; color: var(--fg-3); padding-bottom: 4px; font-weight: 700; }
+.cal .wd:first-child { color: var(--hot); }
+.cel { aspect-ratio: 1 / .9; max-width: 100%; border-radius: 8px; border: 1px solid transparent; padding: 4px 5px; font-size: 10.5px; color: var(--fg-2); display: flex; flex-direction: column; gap: 2px; min-width: 0; font-variant-numeric: tabular-nums; }
+.cel.off { color: var(--dim); }
+.cel.now { border-color: var(--sig); background: var(--sig-soft); color: var(--sig-deep); font-weight: 800; }
+.cel .ev { font-size: 9px; font-weight: 700; color: #fff; border-radius: 5px; padding: 0 4px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; line-height: 1.85; }
+.feed { display: grid; gap: 8px; }
+.feed .i { display: flex; align-items: center; gap: 8px; font-size: 11.5px; }
+.feed .i i { width: 8px; height: 8px; border-radius: 3px; flex: none; }
+
+/* 도넛 · 퍼널 */
+.donut { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+.donut svg { width: 132px; height: 132px; flex: none; }
+.donut ul { display: grid; gap: 6px; flex: 1 1 158px; min-width: 0; }
+.donut li { display: flex; align-items: center; gap: 8px; font-size: 11.5px; }
+.donut i { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.donut .v { margin-left: auto; font-size: 11px; color: var(--fg-3); font-variant-numeric: tabular-nums; }
+.funnel { display: grid; gap: 10px; }
+.funnel .l { display: flex; font-size: 11.5px; margin-bottom: 4px; font-weight: 600; }
+.funnel .l em { margin-left: auto; font-style: normal; font-weight: 800; font-variant-numeric: tabular-nums; }
+.funnel .tr { height: 9px; border-radius: 999px; background: var(--soft); overflow: hidden; }
+.funnel .fi { height: 100%; border-radius: 999px; background: var(--sig); }
+
+/* 작성 */
+.wsplit { display: grid; grid-template-columns: 156px minmax(0, 1fr); gap: 10px; }
+@media (max-width: 720px) { .wsplit { grid-template-columns: minmax(0, 1fr); } }
+.lts { display: grid; gap: 6px; align-content: start; }
+.lts .k { font-size: 10px; color: var(--fg-3); font-weight: 700; }
+.lts .lt { border: 1px solid var(--line); border-radius: 9px; padding: 8px 10px; background: var(--bg); }
+.lts .lt.on { border-color: var(--sig); background: var(--sig-soft); }
+.lts .lt b { display: block; font-size: 11.5px; font-weight: 700; }
+.lts .lt span { color: var(--fg-3); font-size: 10px; }
+.ed { display: grid; gap: 8px; }
+.ed .q, .ed .bd { border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; background: var(--bg); font-size: 12px; line-height: 1.8; }
+.ed .q > span, .ed .bd > span { font-size: 10px; color: var(--fg-3); display: block; font-weight: 600; }
+.ed .bd { min-height: 104px; color: var(--fg-2); }
+.ed .acts { display: flex; gap: 6px; flex-wrap: wrap; }
+.ed .acts span { border: 1px solid var(--line); background: var(--bg); border-radius: 9px; padding: 7px 12px; font-size: 11.5px; font-weight: 700; }
+.ed .acts .p { background: #7C5CFC; border-color: #7C5CFC; color: #fff; }
+
+
+/* ── 엑셀 비교 ── */
+.vs { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 900px) { .vs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.vs .tg { font-size: 14px; font-weight: 800; margin-bottom: 10px; display: flex; align-items: baseline; gap: 8px; letter-spacing: -.03em; }
+.vs .tg span { font-weight: 500; color: var(--fg-3); font-size: 13px; letter-spacing: 0; }
+.xls { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--bg); }
+.xls-s { overflow-x: auto; }
+.xls table { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+.xls th, .xls td { border: 1px solid var(--line-2); padding: 7px 9px; text-align: left; white-space: nowrap; color: var(--fg-2); font-weight: 400; }
+.xls thead th { background: var(--soft); color: var(--fg-3); font-weight: 600; font-size: 10.5px; text-align: center; }
+.xls tbody th { background: var(--soft); color: var(--dim); width: 26px; text-align: center; }
+.vs .nt { font-size: 14.5px; color: var(--fg-2); margin-top: 12px; }
+.vs .nt b { color: var(--fg); font-weight: 700; }
+
+/* ── 기능 카드 ── */
+.feats { display: grid; grid-template-columns: repeat(auto-fit, minmax(196px, 1fr)); gap: 12px; }
+.feat { display: flex; flex-direction: column; gap: 7px; background: var(--bg); border: 1px solid var(--line); border-radius: 16px; padding: 20px; text-decoration: none; min-width: 0; transition: border-color .15s ease, transform .15s ease; }
+.feat:hover { border-color: var(--sig); transform: translateY(-2px); }
+.feat h4 { font-size: 16.5px; }
+.feat p { font-size: 13.5px; color: var(--fg-2); flex: 1 1 auto; }
+.feat .go { font-size: 12.5px; font-weight: 700; color: var(--sig); }
+
+/* ── 2열 ── */
+.two-col { display: grid; gap: clamp(26px, 3.4vw, 52px); align-items: center; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 980px) {
+  .two-col { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); }
+  .two-col.even { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ── 단계 트랙 ── */
+.track { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; margin-top: 22px; }
+.track button { border: 1px solid var(--band-line); background: transparent; color: var(--band-2); border-radius: 999px; padding: 7px 14px; font-size: 13.5px; font-weight: 700; cursor: pointer; }
+.track button:hover { border-color: var(--band-2); color: var(--band-fg); }
+.track button[aria-pressed="true"] { background: #fff; border-color: #fff; color: #241C52; }
+.track .ar { color: var(--band-line); font-size: 11px; }
+
+/* ── D-day ── */
+.ddctl { border: 1px solid var(--line); border-radius: 16px; padding: 20px; background: var(--bg); }
+.ddctl .big { font-size: clamp(34px, 5vw, 50px); font-weight: 900; letter-spacing: -.06em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.ddctl label { font-size: 13.5px; color: var(--fg-2); font-weight: 600; }
+.ddctl input[type="range"] { width: 100%; margin: 14px 0 5px; accent-color: var(--sig); }
+.ddctl .sc { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--fg-3); font-weight: 600; }
+.ddctl .cp { font-size: 13.5px; color: var(--fg-2); margin-top: 12px; min-height: 3.2em; }
+.legend { display: grid; gap: 10px; margin-top: 20px; }
+.legend li { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--fg-2); }
+.legend i { width: 11px; height: 11px; border-radius: 50%; flex: none; }
+
+/* ── AI ── */
+.aigrid { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .aigrid { grid-template-columns: minmax(0, .76fr) minmax(0, 1.24fr); } }
+.picks { display: grid; gap: 6px; align-content: start; }
+.pk { display: flex; align-items: center; gap: 10px; cursor: pointer; min-width: 0; border: 1px solid var(--band-line); border-radius: 11px; padding: 10px 13px; background: var(--band-card); }
+.pk:hover { border-color: #9D85FD; }
+.pk input { accent-color: #9D85FD; width: 16px; height: 16px; flex: none; }
+.pk .tx { min-width: 0; }
+.pk .t1 { font-size: 13.5px; font-weight: 700; display: block; line-height: 1.5; }
+.pk .t2 { font-size: 11.5px; color: var(--band-2); }
+.pbox { border: 1px solid var(--band-line); border-radius: 14px; background: var(--band-card); padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.pbox .h { font-size: 12px; font-weight: 700; color: var(--band-2); }
+.pbox pre { margin: 0; font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; font-size: 12px; line-height: 1.8; color: var(--band-fg); white-space: pre-wrap; background: rgba(0, 0, 0, .3); border-radius: 10px; padding: 13px; overflow-x: auto; }
+.runrow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.run { border: 0; cursor: pointer; background: #7C5CFC; color: #fff; border-radius: 11px; padding: 11px 18px; font-size: 14px; font-weight: 700; }
+.run[disabled] { opacity: .5; cursor: default; }
+.out { border: 1px solid var(--band-line); border-radius: 14px; background: var(--band-card); padding: 18px; font-size: 14.5px; line-height: 1.95; white-space: pre-wrap; min-height: 5em; color: var(--band-fg); }
+.out .ph { color: var(--band-2); }
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(232px, 1fr)); gap: 14px; }
+.step { border-top: 2px solid var(--band-line); padding-top: 13px; }
+.step em { font-style: normal; font-size: 12px; font-weight: 800; color: #C6B5FF; }
+.step p { font-size: 14px; color: var(--band-2); margin-top: 5px; }
+
+/* ── 자격증 검색 ── */
+.finder { border: 1px solid var(--line); border-radius: 16px; background: var(--bg); padding: 17px; }
+.fbar { display: flex; align-items: center; gap: 9px; border: 1px solid var(--line); border-radius: 11px; padding: 11px 13px; background: var(--soft); }
+.fbar:focus-within { border-color: var(--sig); background: var(--bg); }
+.fbar input { border: 0; background: transparent; font: inherit; font-size: 15px; width: 100%; min-width: 0; color: var(--fg); }
+.fbar input:focus { outline: none; }
+.fbar .ic { color: var(--fg-3); font-size: 13px; flex: none; font-weight: 700; }
+.fhits { display: grid; gap: 5px; margin-top: 12px; max-height: 224px; overflow-y: auto; }
+.fhit { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line-2); border-radius: 10px; padding: 8px 11px; min-width: 0; }
+.fhit .nm { font-size: 13.5px; font-weight: 700; min-width: 0; }
+.fhit .is { font-size: 11.5px; color: var(--fg-3); font-weight: 500; }
+.fhit button { margin-left: auto; flex: none; border: 1px solid var(--sig); color: var(--sig); background: transparent; border-radius: 8px; padding: 4px 11px; font-size: 12px; font-weight: 700; cursor: pointer; }
+.fhit button:hover { background: var(--sig); color: #fff; }
+.fhit.got button { border-color: var(--line); color: var(--fg-3); cursor: default; }
+.fhit.got button:hover { background: transparent; color: var(--fg-3); }
+.fnone { font-size: 13.5px; color: var(--fg-3); padding: 14px 2px; }
+.held { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line-2); }
+.held .k { font-size: 11.5px; color: var(--fg-3); font-weight: 700; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.tg2 { font-size: 12.5px; font-weight: 700; background: var(--sig-soft); color: var(--sig-deep); border-radius: 999px; padding: 4px 12px; }
+.tags .nil { font-size: 13px; color: var(--fg-3); font-weight: 400; }
+
+/* ── 팔레트 · 원칙 ── */
+.pal { display: grid; grid-template-columns: repeat(auto-fit, minmax(126px, 1fr)); gap: 10px; }
+.sw { border-radius: 14px; overflow: hidden; border: 1px solid var(--line); }
+.sw .fl { height: 66px; }
+.sw .mt { padding: 10px 12px; background: var(--bg); }
+.sw .nm { font-size: 12.5px; font-weight: 700; display: block; }
+.sw .hx { font-size: 11px; color: var(--fg-3); font-variant-numeric: tabular-nums; }
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px 28px; }
+.rules .n { font-size: 13.5px; font-weight: 800; letter-spacing: 0; line-height: 1.7; color: var(--sig-deep); }
+.rules h4 { margin: 4px 0 6px; }
+.rules p { font-size: 14.5px; color: var(--fg-2); }
+
+
+
+.final { text-align: center; }
+.final .lead { margin-inline: auto; }
+.final .cta { justify-content: center; }
+
+/* ── 스크롤 연출 — 아래에서 떠오르기 · 숫자 카운트업 · 막대와 도넛 그리기 ── */
+@media (prefers-reduced-motion: no-preference) {
+  .rise {
+    transition: opacity var(--dur, 1s) cubic-bezier(.22, .61, .36, 1) var(--d, 0ms),
+                translate var(--dur, 1s) cubic-bezier(.22, .61, .36, 1) var(--d, 0ms);
+  }
+  .rise.pre { opacity: 0; translate: 0 var(--rise, 40px); transition: none; }
+  .feat.rise { --dur: .8s; --rise: 28px; }
+  .sw.rise, .meta li.rise { --dur: .8s; --rise: 24px; }
+  .donut svg { transition: rotate 1.4s cubic-bezier(.22, .61, .36, 1) var(--d, 0ms); }
+  .donut.pre svg { rotate: -160deg; transition: none; }
+  .donut li { opacity: 1; }
+  .donut.pre li { opacity: 1; translate: none; }
+  .funnel .fi { transition: width 1.2s cubic-bezier(.22, .61, .36, 1) calc(var(--i, 0) * 160ms); }
+  .funnel.pre .fi { width: 0 !important; transition: none; }
+  .track button { transition: opacity .6s ease calc(var(--i, 0) * 70ms), translate .6s cubic-bezier(.22, .61, .36, 1) calc(var(--i, 0) * 70ms), border-color .15s ease, color .15s ease, background .15s ease; }
+  .track.pre button { opacity: 0; translate: 0 14px; transition: none; }
+  .track.pre .ar { opacity: 0; }
+  .track .ar { transition: opacity .6s ease .3s; }
+}
+
+footer { border-top: 1px solid var(--line); padding-block: 30px; font-size: 13.5px; color: var(--fg-3); }
+footer .fi { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; }
+footer a { font-weight: 700; color: var(--fg-2); }
+footer a:hover { color: var(--sig); }
+
+/* 실제 400~900 굵기를 제공하는 한글 글꼴로 통일한다. */
+:root { --font: "Wanted Sans", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; }
+body { font-synthesis: none; }
+b, strong { font-synthesis: none; }
+p b, p strong { font-weight: 700; letter-spacing: 0; display: inline-block; max-width: 100%; }
+.letter-content { white-space: pre-wrap; min-height: 290px; padding: 20px; background: var(--band-card); border: 1px solid var(--band-line); border-radius: 12px; font: 15px/1.9 var(--font); color: var(--band-fg); }
+.ai-question { font-size: 13px; color: var(--band-2); margin-bottom: 12px; }
+.pbox .runrow { margin-top: 16px; }
+.search-demo { position: relative; border-color: var(--sig); }
+.search-caret { position:absolute; left: 48px; top:50%; transform:translateY(-50%); font-size:15px; pointer-events:none; }
+.search-caret i { display:inline-block; height:1.1em; border-right:2px solid var(--sig); vertical-align:-.15em; margin-left:2px; animation: caret-blink 1s step-end infinite; }
+.search-demo:not(.edited) input { color:transparent; caret-color:transparent; }
+.search-demo.edited .search-caret { display:none; }
+.search-demo.edited input { color:var(--fg); caret-color:var(--sig); }
+.fbar.search-demo { border-color:var(--sig); background:var(--bg); }
+@keyframes caret-blink { 50% { opacity:0; } }
+.hero-letter { display:inline-block; }
+.hero-word { display:inline-block; white-space:nowrap; }
+@keyframes gather-letter {
+  from { opacity: .35; filter: blur(7px); transform: translate(var(--x), var(--y)); }
+  to { opacity: 1; filter: blur(0); transform: none; }
+}
+@media (prefers-reduced-motion:no-preference) { .hero-letter { animation:gather-letter 1.8s cubic-bezier(.4,0,.2,1) both; animation-delay:var(--delay); } }
+.ui-connection { display:grid; grid-template-columns:1fr 170px 1fr; align-items:center; background:var(--sig-soft); border:1px solid var(--line); border-radius:24px; padding:28px; }
+.ui-panel { background:var(--bg); padding:24px; border-radius:16px; min-width:0; }
+.ui-eyebrow { display:block; font-size:13px; color:var(--sig-deep); font-weight:700; letter-spacing:0; line-height:1.7; margin-bottom:10px; }
+.ui-panel h3 { font-size:24px; margin-bottom:22px; }
+.ui-company { display:flex; gap:10px; align-items:center; padding-bottom:16px; border-bottom:1px solid var(--line); }
+.ui-company i { width:12px; height:12px; border-radius:50%; background:#7C5CFC; }
+.ui-company>span { margin-left:auto; font-size:12px; background:var(--sig-soft); color:var(--sig); padding:3px 10px; border-radius:20px; }
+.ui-field { display:flex; justify-content:space-between; gap:12px; margin-top:16px; font-size:13px; }
+.ui-field>span { color:var(--fg-3); }
+.ui-bridge { text-align:center; display:grid; gap:4px; font-size:13px; color:var(--sig); }
+.ui-bridge>b { font-size:42px; line-height:1.3; }
+.ui-bridge small { font-size:11px; color:var(--fg-2); }
+.ui-week,.ui-calendar { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px; font-size:12px; }
+.ui-week { color:var(--fg-3); text-align:center; margin-bottom:6px; }
+.ui-calendar>div { min-height:86px; padding:6px; background:var(--soft); border-radius:7px; }
+.ui-calendar .selected { outline:1px solid var(--sig); }
+.ui-calendar span { display:block; margin-top:8px; border-left:3px solid #7C5CFC; padding:3px; font-size:10px; line-height:1.5; background:var(--sig-soft); }
+.ui-panel p { margin-top:16px; font-size:13px; color:var(--fg-2); }
+.ui-cards { margin-top:20px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+.ui-card { padding:26px; background:var(--bg); border:1px solid var(--line); border-radius:18px; }
+.ui-card h4 { font-size:21px; }
+.ui-card p { font-size:13px; color:var(--fg-2); margin-top:18px; }
+.ui-path { display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin-top:22px; font-size:12px; }
+.ui-path span { background:var(--soft); border-radius:7px; padding:8px 10px; }
+.ui-path b { color:var(--sig); }
+.ui-stages { display:flex; gap:7px; margin-top:22px; }
+.ui-stages>span { flex:1; padding:8px; background:var(--soft); border-radius:8px; text-align:center; font-size:12px; }
+.ui-stages small { display:block; font-size:10px; margin-top:4px; }
+.ui-stages .current { background:var(--sig-soft); color:var(--sig); box-shadow:inset 0 0 0 1px var(--sig); }
+@media(max-width:800px) { .ui-connection { grid-template-columns:1fr; padding:16px; gap:16px; } .ui-bridge>b { transform:rotate(90deg); } .ui-cards { grid-template-columns:1fr; } }
+@media(prefers-reduced-motion:reduce) { .search-caret i { animation:none; } }
+
+.why-agenda { padding:24px 28px; background:var(--soft); border:1px solid var(--line); border-radius:16px; }
+.why-agenda>p { margin-top:18px; font-size:14px; color:var(--fg-2); }
+.why-agenda>div { display:flex; align-items:center; gap:16px; padding:14px 0; border-bottom:1px solid var(--line); font-size:14px; }
+.why-agenda span { font-size:12px; color:var(--fg-3); }
+.why-agenda em { margin-left:auto; font-style:normal; font-size:12px; color:var(--sig-deep); background:var(--sig-soft); padding:3px 9px; border-radius:6px; }
+/* 개발 배경의 일정 예시는 같은 시간축에서 겹침이 보이는 주간 달력으로 표현한다. */
+.week-preview { overflow:hidden; border:1px solid var(--line); border-radius:20px; background:var(--bg); }
+.week-top { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:22px 26px; border-bottom:1px solid var(--line); }
+.week-top>b { font-size:17px; }.week-top>span { font-size:12px; color:var(--fg-3); }
+.week-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); }
+.week-day { min-width:0; padding:18px 14px 24px; min-height:270px; border-right:1px solid var(--line-2); }.week-day:last-child { border:0; }
+.week-day.crowded { background:var(--sig-soft); }
+.week-date { font-size:12px; color:var(--fg-3); display:flex; gap:8px; align-items:center; margin-bottom:22px; }.week-date>b { font-size:20px; color:var(--fg); }
+.week-date>span { margin-left:auto; font-size:10px; color:var(--sig-deep); }
+.week-event { display:flex; flex-direction:column; border-left:3px solid var(--sig); background:var(--soft); padding:12px; border-radius:4px 9px 9px 4px; gap:3px; margin-bottom:10px; }
+.crowded .week-event { background:var(--bg); }.week-event>span { font-size:11px; color:var(--fg-2); }.week-event>b { font-size:14px; }.week-event>small { font-size:11px; color:var(--fg-3); }
+.week-event.deadline { border-color:var(--hot); }.week-event.deadline>b { color:var(--hot); }
+.week-prep { margin-top:38px; font-size:12px; line-height:1.9; color:var(--fg-3); }.week-empty { text-align:center; color:var(--dim); margin-top:38px; }
+.week-bottom { border-top:1px solid var(--line); padding:20px 26px; display:flex; align-items:flex-start; gap:12px; }.week-bottom p { font-size:14px; color:var(--fg-2); }.week-bottom b { color:var(--fg); }
+.week-mark { width:8px; height:8px; border-radius:50%; background:var(--sig); flex:none; margin-top:9px; }
+@media(max-width:650px) { .week-top { padding:18px; }.week-top>b { font-size:14px; }.week-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }.week-day:nth-child(n+4) { display:none; }.week-day { padding:14px 9px; min-height:255px; }.week-date { flex-wrap:wrap; gap:5px; }.week-date>span { margin-left:0; }.week-event { padding:10px 7px; }.week-bottom { padding:18px; } }
+
+/* 제목과 설명의 호흡, 개발 배경의 명확한 표 대비 */
+.sec-head h2 + .lead { margin-top:24px; }
+.hero-copy h1 + .lead { margin-top:26px !important; }
+.rules h4 + p, .ui-card h4 + p { margin-top:14px; }
+.rules .n + h4 { margin-top:10px; margin-bottom:14px; }
+#why, #why-schedule { background:var(--bg); }
+.nav-links a.active { color:var(--fg); font-weight:800; background:var(--sig-soft); }
+.page-return { padding:28px 0; border-top:1px solid var(--line); }
+.page-return .wrap { display:flex; justify-content:flex-end; }
+.page-return a { color:var(--fg); font-size:14px; font-weight:700; text-decoration:none; padding:10px 0; }
+/* 앱의 일정 막대처럼 박스 전체에 채움색을 사용한다. */
+.week-event { border-left:0; border-radius:7px; background:#7C5CFC; color:#fff; }
+.crowded .week-event { background:#27A05D; }
+.week-event.deadline, .crowded .week-event.deadline { background:#2C9BD6; }
+.week-event>span, .week-event>b, .week-event>small, .week-event.deadline>b { color:#fff; }
+@keyframes event-pop { from { opacity:0; transform:scale(.78); } to { opacity:1; transform:none; } }
+@media(prefers-reduced-motion:no-preference) {
+  .events-armed .week-event, .events-armed .ev { opacity:0; }
+  .events-playing .week-event, .events-playing .ev { animation:event-pop .7s cubic-bezier(.2,.8,.3,1.3) both; animation-delay:var(--event-delay,0ms); transform-origin:center; }
+}
+
+/* 플로고와 동일한 본문 폭·섹션 간격에 맞추고, 정보 카드는 더 간결하게 한다. */
+body { font-size:16px; }
+h2 { font-size:clamp(28px,3.2vw,40px); }
+.lead { font-size:16px; line-height:1.75; }
+.sec-head { margin-bottom:32px; }
+.sec-head h2 + .lead { margin-top:20px; }
+.ui-connection { padding:22px; grid-template-columns:1fr 140px 1fr; border-radius:18px; }
+.ui-panel { padding:20px; }.ui-panel h3 { font-size:21px; margin-bottom:18px; }
+.ui-cards { gap:16px; margin-top:16px; }.ui-card { padding:22px; border-radius:16px; }
+.ui-card h4 { font-size:18px; }.ui-card .ui-eyebrow { font-size:12px; margin-bottom:8px; }
+.ui-card p { font-size:12.5px; margin-top:14px; }.ui-path, .ui-stages { margin-top:17px; }
+.ui-path span { padding:7px 9px; }.ui-stages>span { padding:7px; }
+.btn { min-height:48px; font-size:15px; padding:0 22px; }
+.week-day { min-height:235px; }
+@media(max-width:800px) { .ui-connection { grid-template-columns:1fr; }.ui-cards { grid-template-columns:1fr; } }
+
+.ai-example-note { margin-top:8px; line-height:1.6; }
+#ai .aigrid { margin-bottom:0; }
+.ui-flow { max-width:840px; margin:0 auto; list-style:none; padding:0; }
+.ui-flow>li { display:grid; grid-template-columns:44px minmax(0,1fr); column-gap:28px; position:relative; padding-bottom:36px; }
+.ui-flow>li:last-child { padding-bottom:0; }
+.ui-flow>li:not(:last-child):before { content:""; position:absolute; left:21px; top:44px; bottom:0; width:2px; background:var(--line); }
+.flow-number { width:44px; height:44px; display:grid; place-items:center; background:var(--sig); color:white; border-radius:50%; font-size:13px; font-weight:700; position:relative; z-index:1; }
+.flow-content { padding:3px 0 28px; border-bottom:1px solid var(--line); }
+.ui-flow>li:last-child .flow-content { border-bottom:0; padding-bottom:0; }
+.flow-label { font-size:12px; color:var(--sig-deep); font-weight:700; }
+.flow-content h3 { font-size:22px; margin:8px 0 12px; }
+.flow-content p { font-size:14px; color:var(--fg-2); max-width:43em; }
+.flow-detail { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:18px; font-size:12px; }
+.flow-detail>span { border-radius:6px; background:var(--bg); border:1px solid var(--line); padding:7px 12px; }
+.flow-detail>b { color:var(--sig-deep); }.flow-detail small { color:var(--fg-3); }
+@media(max-width:600px) { .ui-flow>li { column-gap:17px; }.flow-content h3 { font-size:19px; }.flow-detail { gap:8px; } }
+
+/* UI 흐름: 카드 대신 여백, 가는 구분선, 타이포그래피로 위계를 만든다. */
+#design { background:var(--bg); }
+#design>.wrap { display:grid; grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr); gap:64px; align-items:start; }
+#design .sec-head { position:sticky; top:115px; margin:0; }
+#design h2 { font-size:clamp(28px,3.1vw,39px); line-height:1.45; letter-spacing:-.045em; }
+#design .lead { font-size:14px; line-height:1.9; max-width:27em; }
+.ui-flow { width:100%; margin:0; }
+.ui-flow>li { grid-template-columns:38px minmax(0,1fr); column-gap:25px; padding-bottom:44px; }
+.ui-flow>li:not(:last-child):before { left:18px; top:38px; bottom:0; width:1px; background:var(--line); }
+.ui-flow>li:not(:last-child):after { content:""; position:absolute; left:18px; top:38px; bottom:0; width:2px; background:var(--sig); transform:scaleY(var(--line-progress,0)); transform-origin:top; }
+.flow-number { width:38px; height:38px; font-size:12px; font-variant-numeric:tabular-nums; background:var(--soft); border:1px solid var(--line); color:var(--fg-3); transition:background .25s,color .25s,border-color .25s; }
+.ui-flow>li.flow-active .flow-number { background:var(--sig); color:white; border-color:var(--sig); }
+.flow-content { padding:4px 0 30px; }
+.flow-label { color:var(--fg-3); font-size:11px; letter-spacing:.04em; }
+.flow-content h3 { font-size:22px; letter-spacing:-.035em; margin:8px 0 13px; }
+.flow-content p { font-size:13px; line-height:1.9; max-width:31em; }
+.flow-detail { margin-top:21px; column-gap:12px; row-gap:6px; }
+.flow-detail>span { border:0; border-radius:0; background:none; padding:0; color:var(--fg-2); font-size:11px; }
+.flow-detail>span+span { padding-left:12px; border-left:1px solid var(--line); }
+.flow-detail>b { font-size:12px; }.flow-detail small { font-size:10px; }
+@media(max-width:800px) { #design>.wrap { grid-template-columns:1fr; gap:38px; } #design .sec-head { position:static; } .ui-flow>li { column-gap:20px; } }
+@media(prefers-reduced-motion:reduce) { .flow-number { transition:none; } }
+
+.dd-reel { display:inline-block; height:1.15em; line-height:1.15; overflow:hidden; vertical-align:middle; }
+.dd-strip, .dd-strip>span { display:block; line-height:1.15; }
+.ddctl .big { transition:color .45s; }
+#ddRow { transition:background-color .45s; }
+@media(prefers-reduced-motion:no-preference) { .funnel .fi { transition-duration:1.8s; }.donut svg { transition-duration:2.2s; } }
+
+.pick-column { min-width:0; }
+.pick-column .ai-example-note { margin-top:6px; font-size:12px; line-height:1.6; }
+
+/* 숫자 롤링 중에도 높이와 열 너비가 유지되도록 고정한다. */
+#ddBig { width:6.5ch; height:1.3em; line-height:1.3; white-space:nowrap; font-variant-numeric:tabular-nums; }
+#ddRow { display:inline-flex; width:64px; height:27px; align-items:center; justify-content:center; padding:0; box-sizing:border-box; vertical-align:middle; white-space:nowrap; }
+#ddBig .dd-reel { vertical-align:baseline; }
+#ddRow .dd-reel { vertical-align:baseline; }
+.ddctl .cp { min-height:4.5em; }
+#stStep { position:relative; overflow-x:auto; overflow-y:hidden; flex-wrap:nowrap; max-width:100%; scrollbar-width:none; -ms-overflow-style:none; }
+#stStep::-webkit-scrollbar { display:none; }
+.flow-content h3 { font-size:25px; }
+.flow-content p { font-size:16px; line-height:1.8; }
+.flow-label { font-size:13px; }
+.flow-detail>span { font-size:14px; }.flow-detail>b { font-size:14px; }.flow-detail small { font-size:12px; }
+#design .lead { font-size:16px; }
+@media(max-width:600px) { .flow-content h3 { font-size:22px; }.flow-content p { font-size:15px; }.flow-detail>span { font-size:13px; } }
+
+/* 넓은 화면에서는 네 단계가 왼쪽에서 오른쪽으로 이어진다. */
+@media(min-width:801px) {
+  #design>.wrap { display:block; }
+  #design .sec-head { position:static; margin-bottom:46px; }
+  #design .lead { max-width:40em; }
+  .ui-flow { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:0; max-width:none; }
+  .ui-flow>li { display:flex; flex-direction:column; align-items:flex-start; padding:0 24px 0 0; min-width:0; }
+  .ui-flow>li:last-child { padding:0; }
+  .ui-flow>li:not(:last-child):before, .ui-flow>li:not(:last-child):after { left:38px; right:0; top:18px; bottom:auto; width:auto; height:2px; }
+  .ui-flow>li:not(:last-child):after { transform:scaleX(var(--line-progress,0)); transform-origin:left; }
+  .flow-content { padding:24px 0 0; border:0; width:100%; }
+  .flow-content h3 { font-size:21px; line-height:1.5; min-height:3em; }
+  .flow-content p { font-size:14px; line-height:1.85; }
+  .flow-detail { gap:9px; margin-top:20px; }
+  .flow-detail>span { font-size:12px; }.flow-detail>b { font-size:12px; }.flow-detail small { font-size:11px; }
+}
+
+/* 선이 도달하기 전에는 텍스트도 비활성 색으로, 도달한 단계는 함께 켜진다. */
+.ui-flow .flow-label,
+.ui-flow .flow-content h3,
+.ui-flow .flow-content p,
+.ui-flow .flow-detail>span,
+.ui-flow .flow-detail>b,
+.ui-flow .flow-detail small { color:var(--dim); transition:color .5s ease; }
+.ui-flow .flow-active .flow-label { color:var(--sig-deep); }
+.ui-flow .flow-active .flow-content h3 { color:var(--fg); }
+.ui-flow .flow-active .flow-content p,
+.ui-flow .flow-active .flow-detail>span { color:var(--fg-2); }
+.ui-flow .flow-active .flow-detail>b { color:var(--sig-deep); }
+.ui-flow .flow-active .flow-detail small { color:var(--fg-3); }
+@media(prefers-reduced-motion:reduce) { .ui-flow .flow-content * { transition:none; } }
+
+.final-app-icon { width:96px; height:96px; object-fit:contain; margin:28px auto 14px; }
+.final .final-app-icon + .cta { margin-top:0; }
+
+/* 목록의 숫자 배지는 모두 동일한 규격이며, 작은 배지에는 롤링을 적용하지 않는다. */
+#dday .dpill { display:inline-flex; width:48px; height:26px; padding:0; box-sizing:border-box; align-items:center; justify-content:center; vertical-align:middle; line-height:1; white-space:nowrap; }
+#ddRow { width:48px; height:26px; }
+</style>
+
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="pf-back" href="../index.html#projects" aria-label="포트폴리오로 돌아가기"><span class="pf-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M13 8H3M7.5 3.5 3 8l4.5 4.5"/></svg></span><span class="pf-label">돌아가기</span></a>
+    <nav class="nav-links" aria-label="페이지 목차">
+      <a href="#why">소개</a>
+      <a href="#features">기능</a>
+      <a href="#design">UI 구성</a>
+      <a href="#visual-design">디자인</a>
+    </nav>
+    
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ════ 히어로 ════ -->
+  <section class="sec" style="padding-bottom:clamp(26px,3vw,44px)">
+    <div class="wrap">
+      <div class="hero-layout">
+      <div class="hero-copy"><div class="hero-app-identity"><img src="img/logo.png" alt="" width="56" height="56"><span>잡모아</span></div>
+        <h1>흩어진 지원 현황을<br>한 곳에 <span class="hl">모아서</span>,<br>합격은 <span class="hl">더 (More)</span></h1>
+        <p class="lead" style="margin-top:20px">마감·면접 D-day를 색으로 경고하고 단계별 합격률까지 자동 집계하는 <b>취업 지원 관리 데스크톱 앱</b>.<br>자소서는 선택한 항목만으로 AI가 초안을 씁니다.</p>
+        <div class="cta">
+          <a class="btn sig" href="https://github.com/bong-bong00/JobMore" target="_blank" rel="noopener">GitHub 저장소</a>
+          <a class="btn ghost" href="#features">기능 보기</a>
+        </div>
+      </div>
+
+      <div class="hero-preview">
+      <div class="win hero-win">
+        <div class="win-body">
+          <div class="rail">
+            <div class="lg"><img src="img/logo.png" alt="" width="26" height="26"><span><b>잡모아</b><span>JOBMORE</span></span></div>
+            <span class="it on">지원현황</span><span class="it">일정</span><span class="it">기록</span><span class="it">작성</span><span class="it">설정</span>
+          </div>
+          <div class="pane">
+            <div class="ttl">지원현황</div>
+            <div class="tiles">
+              <div class="tile"><span>이번 주 마감</span><b class="count" style="color:#7C5CFC">3</b></div>
+              <div class="tile"><span>마감 임박 (3일내)</span><b class="count" style="color:#D74949">1</b></div>
+              <div class="tile"><span>면접 진행</span><b class="count">2</b></div>
+              <div class="tile"><span>서류 합격률</span><b class="count">67%</b></div>
+            </div>
+            <div class="dbar">
+              <div class="lg2">D-day 색:
+                <em><i style="background:#D74949"></i>마감 3일 이내</em>
+                <em><i style="background:#7E5FFC"></i>그 외 예정</em>
+                <em><i style="background:#A1A5BA"></i>지난 일정</em>
+              </div>
+              <div class="bt"><span class="p">+ 지원 추가</span><span>저장</span></div>
+            </div>
+            <div class="panels" style="grid-template-columns:minmax(0,1fr) 274px">
+              <div class="card">
+                <div class="lbar">
+                  <div class="sch">회사 · 직무 검색</div>
+                  <div class="sel">전체 단계 <i aria-hidden="true">▾</i></div>
+                </div>
+                <div class="ltab-s">
+                  <table class="ltab">
+                    <thead><tr><th>회사</th><th>직무</th><th>단계</th><th>D-day</th><th class="lk">바로가기</th></tr></thead>
+                    <tbody>
+                      <tr class="on"><td class="co">토스</td><td class="jb">프론트엔드 개발자</td><td><span class="bdg" style="background:#6A44F0">2차면접</span></td><td><span class="dpill" style="background:#D74949">D-2</span><span class="dnote">2차면접</span></td><td class="lk">🔗</td></tr>
+                      <tr><td class="co">당근</td><td class="jb">백엔드 개발자</td><td><span class="bdg" style="background:#7C5CFC">서류합격</span></td><td><span class="dpill" style="background:#7E5FFC">D-6</span><span class="dnote">1차면접</span></td><td class="lk">🔗</td></tr>
+                      <tr><td class="co">네이버</td><td class="jb">데이터 엔지니어</td><td><span class="bdg" style="background:#8E7BF2">지원</span></td><td><span class="dpill" style="background:#7E5FFC">D-9</span><span class="dnote">서류 발표</span></td><td class="lk">🔗</td></tr>
+                      <tr><td class="co">라인</td><td class="jb">서버 개발자</td><td><span class="bdg" style="background:#9EA3B8">관심</span></td><td><span class="dpill" style="background:#7E5FFC">D-14</span><span class="dnote">서류 마감</span></td><td class="lk">🔗</td></tr>
+                      <tr><td class="co">배달의민족</td><td class="jb">안드로이드 개발자</td><td><span class="bdg" style="background:#27A05D">최종합격</span></td><td><span class="dpill" style="background:#A1A5BA">D+3</span><span class="dnote">처우 협의</span></td><td class="lk">🔗</td></tr>
+                      <tr class="off"><td class="co">쿠팡</td><td class="jb">프론트엔드 개발자</td><td><span class="bdg" style="background:#E0524F">불합격</span></td><td><span class="dnote">종료된 지원</span></td><td class="lk">🔗</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="card det">
+                <div class="hd"><b>상세 / 편집</b><span>삭제</span></div>
+                <div class="fd"><span>회사 색 (캘린더 표시)</span>
+                  <div class="dots"><i style="background:#7C5CFC">✓</i><i style="background:#3BA3E0"></i><i style="background:#27A05D"></i><i style="background:#E0A02B"></i><i style="background:#E0524F"></i></div>
+                </div>
+                <div class="fd"><span>회사</span><div class="in focus">토스</div></div>
+                <div class="fd"><span>직무</span><div class="in">프론트엔드 개발자</div></div>
+                <div class="two">
+                  <div class="fd"><span>고용형태</span><div class="in sel">정규직<i aria-hidden="true">▾</i></div></div>
+                  <div class="fd"><span>지원 경로</span><div class="in sel">공고 지원<i aria-hidden="true">▾</i></div></div>
+                </div>
+                <div class="two">
+                  <div class="fd"><span>서류 마감일</span><div class="in">2026-09-18</div></div>
+                  <div class="fd"><span>다음 일정일</span><div class="in">2026-09-15</div></div>
+                </div>
+                <div class="fd"><span>메모</span><div class="in memo">기술 면접 대비 : 렌더링 최적화 사례 정리</div></div>
+                <div class="fd"><span>진행 단계</span>
+                  <div class="stepper"><span>지원</span><i aria-hidden="true">›</i><span>서류합격</span><i aria-hidden="true">›</i><span>1차면접</span><i aria-hidden="true">›</i><span class="on" style="background:#6A44F0">2차면접</span></div>
+                </div>
+                <div class="mvbtn"><button type="button">← 이전 단계</button><button type="button" class="p">다음 단계 →</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ 기획 ════ -->
+  <section class="sec soft" id="why">
+    <div class="wrap">
+      <header class="sec-head">
+        <h2>지원자들은 아직도 한땀한땀 지원 현황을 정리중입니다</h2>
+        <p class="lead">국내 취준생 대부분은 지원 현황을 엑셀 시트로 관리합니다.<br>시트는 기록은 잘 되지만, 무엇이 급한지는 알려주지 않습니다.</p>
+      </header>
+
+      <div class="vs">
+        <div>
+          <div class="tg">엑셀 시트 <span>날짜를 직접 읽고 세어야 함</span></div>
+          <div class="xls">
+            <div class="xls-s">
+              <table>
+                <thead><tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th></tr></thead>
+                <tbody>
+                  <tr><th>1</th><td>회사</td><td>직무</td><td>마감/일정</td><td>진행</td></tr>
+                  <tr><th>2</th><td>토스</td><td>프론트엔드</td><td>2026-09-15</td><td>2차면접</td></tr>
+                  <tr><th>3</th><td>당근</td><td>백엔드</td><td>2026-09-19</td><td>서류합격</td></tr>
+                  <tr><th>4</th><td>네이버</td><td>데이터</td><td>2026-09-22</td><td>지원</td></tr>
+                  <tr><th>5</th><td>라인</td><td>서버</td><td>2026-09-27</td><td>관심</td></tr>
+                  <tr><th>6</th><td>배민</td><td>안드로이드</td><td>2026-09-10</td><td>최종합격</td></tr>
+                  <tr><th>7</th><td>쿠팡</td><td>프론트엔드</td><td></td><td>불합격</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <p class="nt">오늘이 며칠인지 떠올리고 행마다 날짜를 빼야 <b>무엇이 급한지</b> 알 수 있습니다.<br>합격률은 수식을 따로 걸어야 하고, 단계를 바꾸면 이전 기록은 덮어써집니다.</p>
+        </div>
+
+        <div>
+          <div class="tg">잡모아 <span>같은 데이터, 계산은 앱이 함</span></div>
+          <div class="win">
+                <div class="win-body"><div class="pane" style="padding:13px">
+              <div class="card">
+                <div class="ltab-s">
+                  <table class="ltab">
+                    <thead><tr><th>회사</th><th>직무</th><th>단계</th><th>D-day</th></tr></thead>
+                    <tbody>
+                      <tr class="on"><td class="co">토스</td><td class="jb">프론트엔드</td><td><span class="bdg" style="background:#6A44F0">2차면접</span></td><td><span class="dpill" style="background:#D74949">D-2</span><span class="dnote">2차면접</span></td></tr>
+                      <tr><td class="co">당근</td><td class="jb">백엔드</td><td><span class="bdg" style="background:#7C5CFC">서류합격</span></td><td><span class="dpill" style="background:#7E5FFC">D-6</span><span class="dnote">1차면접</span></td></tr>
+                      <tr><td class="co">네이버</td><td class="jb">데이터</td><td><span class="bdg" style="background:#8E7BF2">지원</span></td><td><span class="dpill" style="background:#7E5FFC">D-9</span><span class="dnote">서류 발표</span></td></tr>
+                      <tr><td class="co">라인</td><td class="jb">서버</td><td><span class="bdg" style="background:#9EA3B8">관심</span></td><td><span class="dpill" style="background:#7E5FFC">D-14</span><span class="dnote">서류 마감</span></td></tr>
+                      <tr><td class="co">배민</td><td class="jb">안드로이드</td><td><span class="bdg" style="background:#27A05D">최종합격</span></td><td><span class="dpill" style="background:#A1A5BA">D+3</span><span class="dnote">처우 협의</span></td></tr>
+                      <tr class="off"><td class="co">쿠팡</td><td class="jb">프론트엔드</td><td><span class="bdg" style="background:#E0524F">불합격</span></td><td><span class="dnote">종료된 지원</span></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div></div>
+          </div>
+          <p class="nt">남은 일수는 앱이 세고, 3일 이내면 빨강으로 바뀝니다.<br>단계는 색으로 구분되고, 저장한 전형 이력을 바탕으로 <b>서류 합격률 67%</b>가 자동으로 나옵니다.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════ 개발 배경 02 ════ -->
+  <section class="sec soft" id="why-schedule">
+    <div class="wrap">
+      <header class="sec-head">
+        <h2>지원한 회사가 늘면, 챙길 일정도 늘어납니다</h2>
+        <p class="lead">한 회사의 전형을 준비하는 동안 다른 회사의 마감과 면접이 다가옵니다.<br>흩어진 날짜를 모아, 겹치는 일정을 확인하고 준비 순서를 정할 수 있어야 합니다.</p>
+      </header>
+      <div class="week-preview" aria-label="한 주에 여러 회사의 일정이 겹치는 예시">
+        <div class="week-top"><b>한 주에 모인 세 회사의 일정</b><span>일정 예시</span></div>
+        <div class="week-grid">
+          <div class="week-day"><div class="week-date">월 <b>14</b></div><div class="week-event"><span>토스</span><b>2차면접</b><small>10:00</small></div></div>
+          <div class="week-day"><div class="week-date">화 <b>15</b></div><div class="week-prep">면접 준비<br>+ 서류 마무리</div></div>
+          <div class="week-day crowded"><div class="week-date">수 <b>16</b><span>일정 2건</span></div><div class="week-event"><span>당근</span><b>1차면접</b><small>14:00</small></div><div class="week-event deadline"><span>네이버</span><b>서류 마감</b><small>18:00까지</small></div></div>
+          <div class="week-day"><div class="week-date">목 <b>17</b></div><div class="week-empty">—</div></div>
+          <div class="week-day"><div class="week-date">금 <b>18</b></div><div class="week-empty">—</div></div>
+        </div>
+        <div class="week-bottom"><span class="week-mark" aria-hidden="true"></span><p>면접 준비와 서류 마감이 겹치는 날.<br><b>회사별 목록을 넘어, 같은 시간축에서 볼 필요가 있습니다.</b></p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ 기능 ════ -->
+  <section class="sec" id="features">
+    <div class="wrap">
+      <header class="sec-head">
+        <h2>지원 기록부터 자소서까지 다섯 가지</h2>
+        <p class="lead" style="margin-top:16px">아래 다섯 섹션에서 화면과 함께 하나씩 보여드립니다.</p>
+      </header>
+      <div class="feats">
+        <a class="feat" href="#stage"><h4>단계별 지원 추적</h4><p>전체 전형 단계를 한눈에 보고, 현재 단계와 전형 날짜를 관리합니다.</p><span class="go">자세히 →</span></a>
+        <a class="feat" href="#dday"><h4>D-day 색 경고</h4><p>가장 임박한 일정까지 남은 일수를 계산해 색으로 구분해 보여줍니다.</p><span class="go">자세히 →</span></a>
+        <a class="feat" href="#calendar"><h4>월 달력 일정</h4><p>여러 회사의 마감·면접을 한 장에 모아 겹치는 주를 미리 알아챕니다.</p><span class="go">자세히 →</span></a>
+        <a class="feat" href="#record"><h4>기록과 합격률</h4><p>직무별 분포는 도넛으로, 단계별 합격률은 막대로 집계합니다.</p><span class="go">자세히 →</span></a>
+        <a class="feat" href="#ai"><h4>AI 자소서 생성</h4><p>본인 스펙 중 반영할 내용을 토글로 골라 회사 맞춤형으로 씁니다.</p><span class="go">자세히 →</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ 단계 ════ -->
+  <section class="sec band" id="stage">
+    <div class="wrap">
+      <header class="sec-head">
+        <h2>단계와 전형 날짜를 함께 관리합니다</h2>
+        <p class="lead">시트에서는 서류합격을 적는 순간 지원이 사라집니다.<br>잡모아는 모든 단계를 표시한 채 현재 위치만 강조합니다.<br>이전·다음 버튼으로 단계를 옮기고, 전형 날짜는 각 단계를 눌러 직접 기록합니다.<br>눌러 보세요.</p>
+      </header>
+
+      <div class="two-col">
+        <div>
+          <div class="track" role="group" aria-label="전형 단계 선택">
+            <button type="button" data-i="0" aria-pressed="false">관심</button><span class="ar" aria-hidden="true">›</span>
+            <button type="button" data-i="1" aria-pressed="false">지원</button><span class="ar" aria-hidden="true">›</span>
+            <button type="button" data-i="2" aria-pressed="false">서류합격</button><span class="ar" aria-hidden="true">›</span>
+            <button type="button" data-i="3" aria-pressed="false">1차면접</button><span class="ar" aria-hidden="true">›</span>
+            <button type="button" data-i="4" aria-pressed="true">2차면접</button><span class="ar" aria-hidden="true">›</span>
+            <button type="button" data-i="5" aria-pressed="false">처우협의</button><span class="ar" aria-hidden="true">›</span>
+            <button type="button" data-i="6" aria-pressed="false">최종합격</button>
+          </div>
+          <p class="cap" style="margin-top:18px">불합격 · 중도포기는 별도 단계로, 진행 중 집계에서 빠집니다.</p>
+        </div>
+
+        <div class="win">
+            <div class="win-body"><div class="pane">
+            <div class="panels" style="grid-template-columns:minmax(0,1fr) 250px">
+              <div class="card">
+                <div class="h">진행 이력 · StageLogs</div>
+                <ul class="hist" id="stHist"></ul>
+              </div>
+              <div class="card det">
+                <div class="hd"><b>상세 / 편집</b><span>삭제</span></div>
+                <div class="fd"><span>회사 색 (캘린더 표시)</span>
+                  <div class="dots">
+                    <i style="background:#7C5CFC">✓</i><i style="background:#3BA3E0"></i><i style="background:#27A05D"></i><i style="background:#E0A02B"></i><i style="background:#E0524F"></i>
+                  </div>
+                </div>
+                <div class="fd"><span>회사</span><div class="in focus">토스</div></div>
+                <div class="fd"><span>진행 단계</span>
+                  <div class="stepper" id="stStep"></div>
+                </div>
+                <div class="mvbtn">
+                  <button type="button" id="stPrev">← 이전 단계</button>
+                  <button type="button" class="p" id="stNext">다음 단계 →</button>
+                </div>
+              </div>
+            </div>
+          </div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ D-day ════ -->
+  <section class="sec" id="dday">
+    <div class="wrap">
+      <header class="sec-head">
+        <h2>오늘 뭘 해야 하는지 바로 보여줍니다</h2>
+        <p class="lead">다음 일정(면접 등)을 먼저 보고, 없으면 서류 마감일을 기준으로 남은 일수를 계산합니다.<br>D-14부터 남은 일수가 줄어들며 목록의 색도 함께 바뀝니다.<br>슬라이더로 직접 조정할 수도 있습니다.</p>
+      </header>
+
+      <div class="two-col even">
+        <div>
+          <div class="ddctl">
+            <span class="cap">토스 · 2차 임원면접까지</span>
+            <div class="big" id="ddBig" style="color:#D74949">D-2</div>
+            <label for="ddR">남은 일수를 움직여 보세요</label>
+            <input type="range" id="ddR" min="-3" max="14" value="2" step="1">
+            <div class="sc"><span>지난 일정 D+3</span><span>D-14</span></div>
+            <p class="cp" id="ddCp"></p>
+          </div>
+          <ul class="legend">
+            <li><i style="background:#D74949"></i>마감 3일 이내 : 마감 임박 타일에도 함께 집계</li>
+            <li><i style="background:#7E5FFC"></i>그 외 예정 : 대표색으로 표시</li>
+            <li><i style="background:#A1A5BA"></i>지난 일정 : 회색으로 변경</li>
+          </ul>
+        </div>
+
+        <div class="win">
+            <div class="win-body"><div class="pane">
+            <div class="tiles two">
+              <div class="tile"><span>마감 임박 (3일내)</span><b id="ddCount" style="color:#D74949">1</b></div>
+              <div class="tile"><span>면접 진행</span><b class="count">2</b></div>
+            </div>
+            <div class="dbar">
+              <div class="lg2">D-day 색:
+                <em><i style="background:#D74949"></i>마감 3일 이내</em>
+                <em><i style="background:#7E5FFC"></i>그 외 예정</em>
+                <em><i style="background:#A1A5BA"></i>지난 일정</em>
+              </div>
+              <div class="bt"><span class="p">+ 지원 추가</span><span>저장</span></div>
+            </div>
+            <div class="card">
+              <div class="lbar">
+                <div class="sch">회사 · 직무 검색</div>
+                <div class="sel">전체 단계 <i aria-hidden="true">▾</i></div>
+              </div>
+              <div class="ltab-s">
+                <table class="ltab">
+                  <thead><tr><th>회사</th><th>직무</th><th>단계</th><th>D-day</th><th class="lk">바로가기</th></tr></thead>
+                  <tbody>
+                    <tr class="on"><td class="co">토스</td><td class="jb">프론트엔드 개발자</td><td><span class="bdg" style="background:#6A44F0">2차면접</span></td><td><span class="dpill" id="ddRow" style="background:#D74949">D-2</span><span class="dnote">2차면접</span></td><td class="lk">🔗</td></tr>
+                    <tr><td class="co">당근</td><td class="jb">백엔드 개발자</td><td><span class="bdg" style="background:#7C5CFC">서류합격</span></td><td><span class="dpill" style="background:#7E5FFC">D-6</span><span class="dnote">1차면접</span></td><td class="lk">🔗</td></tr>
+                    <tr><td class="co">네이버</td><td class="jb">데이터 엔지니어</td><td><span class="bdg" style="background:#8E7BF2">지원</span></td><td><span class="dpill" style="background:#7E5FFC">D-9</span><span class="dnote">서류 발표</span></td><td class="lk">🔗</td></tr>
+                    <tr><td class="co">라인</td><td class="jb">서버 개발자</td><td><span class="bdg" style="background:#9EA3B8">관심</span></td><td><span class="dpill" style="background:#7E5FFC">D-14</span><span class="dnote">서류 마감</span></td><td class="lk">🔗</td></tr>
+                    <tr><td class="co">배달의민족</td><td class="jb">안드로이드 개발자</td><td><span class="bdg" style="background:#27A05D">최종합격</span></td><td><span class="dpill" style="background:#A1A5BA">D+3</span><span class="dnote">처우 협의</span></td><td class="lk">🔗</td></tr>
+                    <tr class="off"><td class="co">쿠팡</td><td class="jb">프론트엔드 개발자</td><td><span class="bdg" style="background:#E0524F">불합격</span></td><td><span class="dnote">종료된 지원</span></td><td class="lk">🔗</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ 달력 ════ -->
+  <section class="sec soft" id="calendar">
+    <div class="wrap">
+      <header class="sec-head">
+        <h2>겹치는 주를 미리 알아챕니다</h2>
+        <p class="lead">여러 회사의 마감과 면접을 월 단위 한 장에 모읍니다.<br>지정한 회사 색을 일정 박스에 적용하고, 오늘은 테두리로 표시합니다.</p>
+      </header>
+
+      <div class="win">
+        <div class="win-body">
+          <div class="rail">
+            <div class="lg"><img src="img/logo.png" alt="" width="26" height="26"><span><b>잡모아</b><span>JOBMORE</span></span></div>
+            <span class="it">지원현황</span><span class="it on">일정</span><span class="it">기록</span><span class="it">작성</span><span class="it">설정</span>
+          </div>
+          <div class="pane">
+            <div class="ttl">일정</div>
+            <div class="panels">
+              <div class="card">
+                <div class="h">2026년 9월</div>
+                <div class="cal">
+                  <div class="wd">일</div><div class="wd">월</div><div class="wd">화</div><div class="wd">수</div><div class="wd">목</div><div class="wd">금</div><div class="wd">토</div>
+                  <div class="cel off">30</div><div class="cel">31</div><div class="cel">1</div><div class="cel">2</div><div class="cel">3</div><div class="cel">4</div><div class="cel">5</div>
+                  <div class="cel">6</div><div class="cel">7</div><div class="cel">8</div><div class="cel">9</div>
+                  <div class="cel">10<span class="ev" style="background:#27A05D">배민 처우</span></div>
+                  <div class="cel">11</div><div class="cel">12</div>
+                  <div class="cel now">13</div>
+                  <div class="cel">14</div>
+                  <div class="cel">15<span class="ev" style="background:#7C5CFC">토스 2차</span></div>
+                  <div class="cel">16</div><div class="cel">17</div>
+                  <div class="cel">18<span class="ev" style="background:#7C5CFC">토스 마감</span></div>
+                  <div class="cel">19<span class="ev" style="background:#27A05D">당근 1차</span></div>
+                  <div class="cel">20</div><div class="cel">21</div>
+                  <div class="cel">22<span class="ev" style="background:#2C9BD6">네이버 발표</span></div>
+                  <div class="cel">23</div><div class="cel">24</div><div class="cel">25</div><div class="cel">26</div>
+                  <div class="cel">27<span class="ev" style="background:#7C5CFC">라인 마감</span></div>
+                  <div class="cel">28</div><div class="cel">29</div><div class="cel">30</div><div class="cel off">1</div><div class="cel off">2</div><div class="cel off">3</div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="h">다가오는 일정</div>
+                <div class="feed">
+                  <div class="i"><i style="background:#7C5CFC"></i><span><b>토스</b> 2차 임원면접 · 9/15</span></div>
+                  <div class="i"><i style="background:#7C5CFC"></i><span><b>토스</b> 서류 마감 · 9/18</span></div>
+                  <div class="i"><i style="background:#27A05D"></i><span><b>당근</b> 1차 면접 · 9/19</span></div>
+                  <div class="i"><i style="background:#2C9BD6"></i><span><b>네이버</b> 서류 발표 · 9/22</span></div>
+                </div>
+                <div class="f">회사별 지정 색으로 일정을 구분합니다.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ 기록 ════ -->
+  <section class="sec" id="record">
+    <div class="wrap">
+      <header class="sec-head">
+        <h2>지나온 지원을 한 번에 돌아보기</h2>
+        <p class="lead">합격률은 진행 이력에서 각 단계에 한 번이라도 도달한 건수를 세어 계산합니다.</p>
+      </header>
+
+      <div class="win">
+        <div class="win-body">
+          <div class="rail">
+            <div class="lg"><img src="img/logo.png" alt="" width="26" height="26"><span><b>잡모아</b><span>JOBMORE</span></span></div>
+            <span class="it">지원현황</span><span class="it">일정</span><span class="it on">기록</span><span class="it">작성</span><span class="it">설정</span>
+          </div>
+          <div class="pane">
+            <div class="ttl">기록</div>
+            <div class="tiles five">
+              <div class="tile"><span>전체 지원</span><b class="count">6</b></div>
+              <div class="tile"><span>최종합격</span><b class="count" style="color:#27A05D">1</b></div>
+              <div class="tile"><span>불합격</span><b class="count">1</b></div>
+              <div class="tile"><span>중도포기</span><b class="count">0</b></div>
+              <div class="tile"><span>최종 합격률</span><b class="count" style="color:#7C5CFC">17%</b></div>
+            </div>
+            <div class="panels" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-top:10px">
+              <div class="card">
+                <div class="h">직무별 지원</div>
+                <div class="donut">
+                  <svg viewBox="0 0 200 200" role="img" aria-label="직무별 지원 분포. 프론트엔드 개발자 2건 33퍼센트, 백엔드 개발자·데이터 엔지니어·서버 개발자·안드로이드 개발자 각 1건 17퍼센트.">
+                    <path d="M 100 8 A 92 92 0 0 1 179.67 146 L 148.5 128 A 56 56 0 0 0 100 44 Z" fill="#7C5CFC"></path>
+                    <path d="M 179.67 146 A 92 92 0 0 1 100 192 L 100 156 A 56 56 0 0 0 148.5 128 Z" fill="#3BA3E0"></path>
+                    <path d="M 100 192 A 92 92 0 0 1 20.33 146 L 51.5 128 A 56 56 0 0 0 100 156 Z" fill="#27A05D"></path>
+                    <path d="M 20.33 146 A 92 92 0 0 1 20.33 54 L 51.5 72 A 56 56 0 0 0 51.5 128 Z" fill="#E0A02B"></path>
+                    <path d="M 20.33 54 A 92 92 0 0 1 100 8 L 100 44 A 56 56 0 0 0 51.5 72 Z" fill="#E0524F"></path>
+                  </svg>
+                  <ul>
+                    <li><i style="background:#7C5CFC"></i>프론트엔드 개발자<span class="v">2 · 33%</span></li>
+                    <li><i style="background:#3BA3E0"></i>백엔드 개발자<span class="v">1 · 17%</span></li>
+                    <li><i style="background:#27A05D"></i>데이터 엔지니어<span class="v">1 · 17%</span></li>
+                    <li><i style="background:#E0A02B"></i>서버 개발자<span class="v">1 · 17%</span></li>
+                    <li><i style="background:#E0524F"></i>안드로이드 개발자<span class="v">1 · 17%</span></li>
+                  </ul>
+                </div>
+              </div>
+              <div class="card">
+                <div class="h">단계별 합격 현황</div>
+                <div class="funnel">
+                  <div><div class="l"><span>지원까지 도달</span><em class="count">6 · 100%</em></div><div class="tr"><div class="fi" style="width:100%"></div></div></div>
+                  <div><div class="l"><span>서류합격까지</span><em class="count">4 · 67%</em></div><div class="tr"><div class="fi" style="width:67%"></div></div></div>
+                  <div><div class="l"><span>면접까지</span><em class="count">2 · 33%</em></div><div class="tr"><div class="fi" style="width:33%"></div></div></div>
+                  <div><div class="l"><span>최종합격</span><em class="count">1 · 17%</em></div><div class="tr"><div class="fi" style="width:17%;background:#27A05D"></div></div></div>
+                </div>
+                <div class="f">항목이 많으면 상위 6개만 남기고 나머지는 기타로 묶습니다</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ AI ════ -->
+  <section class="sec band" id="ai">
+    <div class="wrap">
+      <header class="sec-head">
+        <h2>반영할 스펙을 토글로 고릅니다</h2>
+        <p class="lead">프로필 전체를 통째로 보내지 않습니다. 자격증·학력·대외활동·경력·희망직무 중 켠 항목만 모아 프롬프트를 만들고, SDK 없이 REST API를 직접 호출합니다.</p>
+      </header>
+
+      <div class="win" style="margin-bottom:28px">
+        <div class="win-body">
+          <div class="rail">
+            <div class="lg"><img src="img/logo.png" alt="" width="26" height="26"><span><b>잡모아</b><span>JOBMORE</span></span></div>
+            <span class="it">지원현황</span><span class="it">일정</span><span class="it">기록</span><span class="it on">작성</span><span class="it">설정</span>
+          </div>
+          <div class="pane">
+            <div class="ttl">작성</div>
+            <div class="wsplit">
+              <div class="lts">
+                <div class="k">내 자소서</div>
+                <div class="lt on"><b>토스 · 지원동기</b><span>2026-09-12 수정</span></div>
+                <div class="lt"><b>공통 · 성장과정</b><span>2026-09-08 수정</span></div>
+                <div class="lt"><b>네이버 · 직무역량</b><span>2026-09-02 수정</span></div>
+              </div>
+              <div class="ed">
+                <div class="q"><span>문항</span>지원 직무를 위해 어떤 준비를 해왔는지 기술해 주세요.</div>
+                <div class="bd"><span>내용</span>저는 사용자가 겪는 작은 불편을 끝까지 따라가 해결하는 것을 즐기는 지원자입니다. 정보처리기사와 SQLD를 준비하며 데이터가 저장되고 읽히는 과정을 구조로 이해하게 되었고…</div>
+                <div class="acts">
+                  <span class="p">🤖 AI 자소서 생성</span><span>📋 복사</span><span>저장</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3>항목을 켜고 꺼 보세요</h3>
+      <div class="aigrid" style="margin-top:18px">
+<div class="pick-column">
+        <div class="picks" id="picks">
+          <label class="pk"><input type="checkbox" id="k0" checked data-t="자격증: 정보처리기사 (한국산업인력공단)"><span class="tx"><span class="t1">정보처리기사</span><span class="t2">자격증 · 한국산업인력공단</span></span></label>
+          <label class="pk"><input type="checkbox" id="k1" checked data-t="자격증: SQLD (SQL 개발자)"><span class="tx"><span class="t1">SQLD</span><span class="t2">자격증 · 한국데이터산업진흥원</span></span></label>
+          <label class="pk"><input type="checkbox" id="k2" data-t="학력: 한국대학교 컴퓨터공학과 졸업"><span class="tx"><span class="t1">컴퓨터공학과 졸업</span><span class="t2">학력</span></span></label>
+          <label class="pk"><input type="checkbox" id="k3" checked data-t="경력: (주)테크스타트 백엔드 인턴 (2023.07~2023.12): REST API 개발 보조"><span class="tx"><span class="t1">백엔드 인턴 6개월</span><span class="t2">경력 · (주)테크스타트</span></span></label>
+          <label class="pk"><input type="checkbox" id="k4" data-t="대외활동: 교내 개발 동아리 프로젝트 리드"><span class="tx"><span class="t1">개발 동아리 리드</span><span class="t2">대외활동</span></span></label>
+          <label class="pk"><input type="checkbox" id="k5" data-t="희망직무: 프론트엔드 개발자"><span class="tx"><span class="t1">프론트엔드 개발자</span><span class="t2">희망 직무</span></span></label>
+        </div>
+
+<p class="cap ai-example-note">선택한 항목으로 생성한 예시가 오른쪽 자소서 본문에 채워집니다.</p>
+</div>
+
+        <div class="pbox">
+          <span class="h" id="editorLabel">자기소개서 내용</span>
+          <div class="ai-question">지원 직무를 위해 어떤 준비를 해왔는지 기술해 주세요.</div><div id="pView" class="letter-content" role="status" aria-live="polite"></div>
+          <div class="runrow">
+            <button type="button" class="run" id="runBtn">🤖 AI 자소서 생성</button>
+            <span class="cap">버튼을 눌러 자소서를 생성해보세요</span>
+          </div>
+        </div>
+      </div>
+
+
+      <h3 class="sub-head no-motion">호출이 실패해도 멈추지 않게</h3>
+      <div class="steps">
+        <div class="step"><em>01</em><p>선택한 항목과 문항을 모아<br>AI에 보낼 요청을 만듭니다.</p></div>
+        <div class="step"><em>02</em><p>API 키가 없으면<br>앱에서 바로 초안을 만듭니다.</p></div>
+        <div class="step"><em>03</em><p>호출이 실패해도 선택한 항목으로<br>기본 초안을 작성합니다.</p></div>
+        <div class="step"><em>04</em><p>인터넷 연결이 없어도<br>초안 생성을 시연할 수 있습니다.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ 입력 ════ -->
+  <section class="sec" id="input">
+    <div class="wrap">
+      <header class="sec-head">
+        <h2>표기 흔들림과 오타를 목록에서 막습니다</h2>
+        <p class="lead">자격증과 희망직무는 직접 타이핑하지 않고 목록에서 검색해 담습니다.<br>채용 사이트 자동 연동이 불가능한 만큼, 입력 자체를 가볍게 만드는 쪽으로 방향을 틀었습니다.</p>
+      </header>
+
+      <div class="two-col even">
+        <div class="finder">
+          <div class="fbar search-demo">
+            <span class="ic" aria-hidden="true">검색</span>
+            <label for="cq" style="position:absolute;left:-9999px">자격증 검색</label>
+            <span class="search-caret" aria-hidden="true">정보<i></i></span><input id="cq" type="text" value="정보" autocomplete="off" placeholder="자격증 이름이나 발급기관">
+          </div>
+          <div class="fhits" id="chits"></div>
+          <div class="held">
+            <span class="k">담은 자격증</span>
+            <div class="tags" id="cheld"><span class="nil">아직 담은 자격증이 없습니다</span></div>
+          </div>
+        </div>
+
+        <div class="rules" style="grid-template-columns:minmax(0,1fr);gap:22px">
+          <div><div class="n">자격증 · 희망직무</div><h4>62개 · 64개 목록에서 고르기</h4><p>이름과 발급기관 어느 쪽으로 쳐도 걸립니다.<br>발급기관이 같이 들어가므로 따로 적을 일이 없습니다.</p></div>
+          <div><div class="n">자소서</div><h4>📋 복사 한 번으로 붙여넣기</h4><p>미리 써 두고 지원 사이트에서 Ctrl+V로 꺼내 씁니다.</p></div>
+          <div><div class="n">공고</div><h4>🔗 저장한 URL로 바로 열기</h4><p>공고 URL을 저장해 두면 원본 공고가 기본 브라우저에서 열립니다.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ UI 구성 ════ -->
+  <section class="sec soft" id="design">
+    <div class="wrap">
+      <header class="sec-head">
+        <h2>한 번 적은 지원 정보,<br>다음 화면에서도 그대로.</h2>
+        <p class="lead">지원현황 → 일정 → 확인과 수정 → 기록.<br>화면이 바뀌어도 같은 정보를 이어서 씁니다.</p>
+      </header>
+      <ol class="ui-flow" aria-label="지원 정보가 화면 사이에서 이어지는 순서">
+        <li><span class="flow-number">01</span><div class="flow-content"><span class="flow-label">지원현황</span><h3>회사와 일정을 등록</h3><p>지원 단계·마감일·다음 일정을 한 곳에 입력합니다.</p><div class="flow-detail"><b>토스</b><span>2차면접</span><span>9월 15일</span></div></div></li>
+        <li><span class="flow-number">02</span><div class="flow-content"><span class="flow-label">일정</span><h3>등록한 날짜가 달력에</h3><p>같은 회사 색과 날짜로 표시됩니다. 달력에서 바꾼 날짜도 지원 정보에 저장됩니다.</p><div class="flow-detail"><span>지원현황</span><b>↔</b><span>달력</span><small>같은 정보 공유</small></div></div></li>
+        <li><span class="flow-number">03</span><div class="flow-content"><span class="flow-label">확인과 수정</span><h3>오늘 일정을 보고 준비</h3><p>날짜별 일정을 확인하고, 필요한 지원을 검색해 상세 내용이나 전형 날짜를 수정합니다.</p><div class="flow-detail"><span>날짜 선택</span><b>→</b><span>일정 확인</span><b>→</b><span>수정</span></div></div></li>
+        <li><span class="flow-number">04</span><div class="flow-content"><span class="flow-label">기록</span><h3>마무리한 지원은 기록으로</h3><p>최종 결과를 확인한 지원은 기록에 남기고, 지원현황에서는 진행 중인 지원에 집중합니다.</p><div class="flow-detail"><span>최종 결과 확인</span><b>→</b><span>기록에 보관</span></div></div></li>
+      </ol>
+    </div>
+  </section>
+
+<section class="design-board" id="visual-design" style="--d-bg:var(--soft);--d-ink:var(--fg);--d-sub:var(--fg-2);--d-point:var(--sig);--d-line:var(--line);--d-card:var(--bg)"><div class="wrap"><header><h2>보라는 행동에, 상태는 신호색으로</h2></header><div class="design-palette">
+<div class="design-swatch" style="--c:#7C5CFC"><i></i><div><b>주요 행동</b><small>#7C5CFC</small><p class="swatch-reason">채용 서비스의 딱딱함을 덜고 취업 준비 공간에 친근함을 주는 색</p></div></div>
+<div class="design-swatch" style="--c:#171E33"><i></i><div><b>본문</b><small>#171E33</small><p class="swatch-reason">긴 목록도 또렷하게 읽히는 색</p></div></div>
+<div class="design-swatch" style="--c:#D74949"><i></i><div><b>마감 임박</b><small>#D74949</small><p class="swatch-reason">다가온 마감을 알리는 경고색</p></div></div>
+<div class="design-swatch" style="--c:#27A05D"><i></i><div><b>최종합격</b><small>#27A05D</small><p class="swatch-reason">합격을 나타내는 긍정의 색</p></div></div>
+<div class="design-swatch" style="--c:#F5F6FC"><i></i><div><b>화면 바탕</b><small>#F5F6FC</small><p class="swatch-reason">정보가 돋보이는 밝은 바탕</p></div></div>
+</div><div class="design-principles"><article><h3>같은 회사는 같은 색</h3><p>지원현황에서 고른 회사 색을 일정에서도 공유하여 다른 화면에서도 같은 회사임을 알아볼 수 있게 했습니다.</p></article><article><h3>상태를 글과 색으로 함께</h3><p>D-day 숫자와 일정 이름을 나란히 두고, 임박·예정·지난 일정을 색으로 한 번 더 구분합니다.</p></article><article><h3>정보를 읽는 순서 고정</h3><p>요약 수치 → 지원 목록 → 상세 편집으로 이어지는 순서를 유지해 확인과 수정이 한 화면에서 이어집니다.</p></article></div></div></section>
+  <!-- ════ 마지막 ════ -->
+  <section class="sec final"><div class="wrap"><div class="final-content"><img class="final-app-icon" src="img/logo.png" alt="잡모아 앱 아이콘" width="80" height="80"><h2>흩어진 지원 현황을 한 곳에 <span class="hl">모아서</span></h2></div></div></section>
+</main>
+<footer class="page-return"><div class="wrap"><a href="#top">처음으로 ↑</a></div></footer>
+
+
+<script>
+(function () {
+  /* 공통: 요소 윗변이 화면 가운데(50%)에 닿으면 시작, 화면 밖으로 완전히 빠지면 되돌린다.
+     맨 아래까지 내려도 가운데에 닿지 못하는 끝부분 요소는 바닥에 닿는 순간 시작한다. */
+  /* 시작 선 정하기: 맨 아래까지 내렸을 때 윗변이 화면 가운데(50%)까지 올라올 수 있으면 50%,
+     페이지 끝이라 못 올라오면 화면 80% 지점(아래 20%)에 닿을 때 시작한다.
+     글꼴·이미지가 다 불러와지면(load) 페이지 높이가 바뀌므로 다시 재고, 창 크기가 바뀌어도 다시 잰다. */
+  var TL = (function () {
+    var list = [];
+    function line(el) {
+      var max = document.documentElement.scrollHeight - innerHeight;
+      var top = el.getBoundingClientRect().top + scrollY;
+      return top - max <= innerHeight * 0.6 ? 0.6 : 0.8;
+    }
+    function margin(l) { return "0px 0px -" + Math.round((1 - l) * innerHeight) + "px 0px"; }
+    /* el의 시작 선을 넘으면 cb(entry). 판정이 바뀌면 관찰자를 새 선으로 다시 만든다 */
+    function watch(el, cb) {
+      var r = { el: el, l: 0, io: null };
+      r.build = function () {
+        var l = line(el);
+        el._tl = l;
+        if (l === r.l) return;
+        r.l = l;
+        if (r.io) r.io.disconnect();
+        r.io = new IntersectionObserver(function (es) { cb(es[0]); }, { rootMargin: margin(l) });
+        r.io.observe(el);
+      };
+      r.build(); list.push(r);
+      return r.io;
+    }
+    function refresh() { list.forEach(function (r) { r.build(); }); }
+    var t = null;
+    addEventListener("resize", function () { clearTimeout(t); t = setTimeout(refresh, 200); });
+    addEventListener("load", refresh);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(refresh);
+    window.__triggerLines = list;   /* 점검용: 어떤 요소가 80% 선을 쓰는지 */
+    return { line: function (el) { return el._tl || line(el); }, watch: watch, refresh: refresh };
+  })();
+  var MID = [];
+  /* onlyBelow: 숨겼다 다시 보여 주는 연출은 아래로 빠졌을 때만 되돌려, 위로 지나간 내용이 숨은 채 남지 않게 한다 */
+  function midView(el, enter, leave, onlyBelow) {
+    if (!el) return;
+    var on = false;
+    function go() { if (!on) { on = true; enter(); } }
+    TL.watch(el, function (e) { if (e.isIntersecting) go(); });   /* 끝부분은 80% 지점 */
+    new IntersectionObserver(function (es) {
+      var e = es[0];
+      if (!e.isIntersecting && on && (!onlyBelow || e.boundingClientRect.top > 0)) { on = false; if (leave) leave(); }
+    }).observe(el);
+    MID.push({ el: el, go: go });
+  }
+  function atBottom() { return innerHeight + scrollY >= document.documentElement.scrollHeight - 4; }
+  window.addEventListener("scroll", function () {
+    if (!atBottom()) return;
+    MID.forEach(function (m) { var r = m.el.getBoundingClientRect(); if (r.top < innerHeight && r.bottom > 0) m.go(); });
+  }, { passive: true });
+
+  /* 스크롤에 맞춰 선이 다음 원까지 도달하면 해당 원을 강조한다. */
+  var flowSteps = Array.from(document.querySelectorAll(".ui-flow > li"));
+  var flowFrame = null;
+  function resetFlow() {
+    cancelAnimationFrame(flowFrame);
+    flowSteps.forEach(function (step) { step.style.setProperty("--line-progress", 0); step.classList.remove("flow-active"); });
+  }
+  if ("IntersectionObserver" in window) {
+    midView(document.querySelector(".ui-flow"), function () {
+        resetFlow();
+        var reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
+        var start=null;
+        function advance(now) {
+          if(start===null) start=now;
+          var elapsed=reduce ? 10000 : Math.max(0,now-start-250);
+          flowSteps.forEach(function (step,i) {
+            var progress=Math.max(0,Math.min(1,(elapsed-i*1300)/1000));
+            step.classList.toggle("flow-active",elapsed>=i*1300);
+            step.style.setProperty("--line-progress",progress);
+          });
+          if(elapsed<(flowSteps.length-1)*1300+1000) flowFrame=requestAnimationFrame(advance);
+        }
+        flowFrame=requestAnimationFrame(advance);
+    }, resetFlow, true);
+  }
+
+  /* 목차는 기능 내부의 개별 섹션도 기능으로 묶어 현재 위치를 표시한다. */
+  var menuLinks = Array.from(document.querySelectorAll(".nav-links a"));
+  var menuSections = Array.from(document.querySelectorAll("main > section[id]"));
+  function updateMenu() {
+    var current = "";
+    menuSections.forEach(function (section) {
+      if (section.getBoundingClientRect().top <= Math.max(120, innerHeight * .25)) current = section.id;
+    });
+    var key = current === "visual-design" ? "visual-design" : current === "design" ? "design" :
+      (current === "why" || current === "why-schedule" ? "why" : current ? "features" : "");
+    menuLinks.forEach(function (link) {
+      var active = link.getAttribute("href") === "#" + key;
+      link.classList.toggle("active", active);
+      if (active) link.setAttribute("aria-current", "location");
+      else link.removeAttribute("aria-current");
+    });
+  }
+  window.addEventListener("scroll", updateMenu, {passive:true});
+  window.addEventListener("resize", updateMenu); updateMenu();
+  if ("IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion:reduce)").matches) {
+    document.querySelectorAll(".week-preview, #calendar .cal").forEach(function (calendar) {
+      calendar.querySelectorAll(".week-event, .ev").forEach(function (event, i) {
+        event.style.setProperty("--event-delay", (i * 480) + "ms");
+      });
+      calendar.classList.add("events-armed");
+      midView(calendar,
+        function () { calendar.classList.add("events-playing"); },
+        function () { calendar.classList.remove("events-playing"); }, true);
+    });
+  }
+
+
+  // 첫 화면의 글자 모이기 효과는 본문 등장 효과와 독립적으로 재생합니다.
+  var headline = document.querySelector(".hero-copy h1");
+  if (headline) {
+    var letterIndex = 0;
+    function splitHeroText(parent) {
+      Array.from(parent.childNodes).forEach(function(node) {
+        if (node.nodeType === 3) {
+          var fragment = document.createDocumentFragment();
+          node.textContent.split(/(\s+)/).forEach(function(word) {
+            if (!word.trim()) { fragment.appendChild(document.createTextNode(word)); return; }
+            var group = document.createElement("span");
+            group.className = "hero-word";
+            Array.from(word).forEach(function(char) {
+              var span = document.createElement("span");
+              var i = letterIndex++;
+              span.className = "hero-letter";
+              span.textContent = char;
+              span.style.setProperty("--x", ((i % 2 ? 1 : -1) * (35 + i % 5 * 15)) + "px");
+              span.style.setProperty("--y", ((i % 3 - 1) * 55) + "px");
+              span.style.setProperty("--delay", (i * 22) + "ms");
+              group.appendChild(span);
+            });
+            fragment.appendChild(group);
+          });
+          node.replaceWith(fragment);
+        } else if (node.nodeType === 1 && node.tagName !== "BR") { splitHeroText(node); }
+      });
+    }
+    splitHeroText(headline);
+  }
+
+  var searchInput = document.getElementById("cq");
+  searchInput.addEventListener("input", function () { searchInput.parentNode.classList.add("edited"); });
+  if ("IntersectionObserver" in window) {
+    var searchFocused = false;
+    TL.watch(searchInput, function (e) {
+      if (!searchFocused && e.isIntersecting && document.activeElement === document.body) {
+        searchFocused = true;
+        searchInput.focus({preventScroll:true});
+        searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
+      }
+    });
+  }
+
+  /* 목업은 컨테이너 폭에 맞춰 고정 축소하며, 이동 애니메이션은 적용하지 않는다. */
+  var heroPreview = document.querySelector(".hero-preview");
+  var heroWindow = document.querySelector(".hero-win");
+  function fitHeroPreview() {
+    var scale = Math.min(1, heroPreview.clientWidth / 1100);
+    heroWindow.style.transform = "scale(" + scale + ")";
+    heroPreview.style.height = (heroWindow.offsetHeight * scale) + "px";
+  }
+  fitHeroPreview();
+  if ("ResizeObserver" in window) {
+    new ResizeObserver(fitHeroPreview).observe(heroPreview);
+    new ResizeObserver(fitHeroPreview).observe(heroWindow);
+  }
+  window.addEventListener("resize", fitHeroPreview);
+  if (document.fonts) { document.fonts.ready.then(fitHeroPreview); }
+
+  "use strict";
+
+  /* 전형 단계 — 앱의 Stage 파이프라인과 배지 색 */
+  var STAGES = [
+    { n: "관심", c: "#9EA3B8", w: "관심 등록" },
+    { n: "지원", c: "#8E7BF2", w: "09-01" },
+    { n: "서류합격", c: "#7C5CFC", w: "09-05" },
+    { n: "1차면접", c: "#7A5AF8", w: "09-11" },
+    { n: "2차면접", c: "#6A44F0", w: "09-15" },
+    { n: "처우협의", c: "#E0A02B", w: "09-18" },
+    { n: "최종합격", c: "#27A05D", w: "09-21" }
+  ];
+  var stHist = document.getElementById("stHist");
+  var stStep = document.getElementById("stStep");
+  var stPrev = document.getElementById("stPrev");
+  var stNext = document.getElementById("stNext");
+  var stBtns = Array.prototype.slice.call(document.querySelectorAll(".track button"));
+  var cur = 4;
+
+  function drawStage(i) {
+    cur = Math.max(0, Math.min(STAGES.length - 1, i));
+    stHist.innerHTML = STAGES.map(function (s, k) {
+      var on = k <= cur;
+      return '<li class="' + (on ? "on" : "") + '"><i></i><span>' + s.n +
+             "</span><em>" + (on ? s.w : "—") + "</em></li>";
+    }).join("");
+    var parts = [];
+    for (var j = 0; j < STAGES.length; j++) {
+      if (j > 0) { parts.push('<i aria-hidden="true">›</i>'); }
+      parts.push('<span class="' + (j === cur ? "on" : "") + '"' +
+                 (j === cur ? ' style="background:' + STAGES[j].c + '"' : "") + ">" + STAGES[j].n + "</span>");
+    }
+    stStep.innerHTML = parts.join("");
+    requestAnimationFrame(function () {
+      var activeStep = stStep.querySelector(".on");
+      if (activeStep) {
+        var left = activeStep.offsetLeft - (stStep.clientWidth - activeStep.offsetWidth) / 2;
+        stStep.scrollTo({left:Math.max(0,left), behavior:matchMedia("(prefers-reduced-motion:reduce)").matches ? "instant" : "smooth"});
+      }
+    });
+    stBtns.forEach(function (b) {
+      b.setAttribute("aria-pressed", Number(b.dataset.i) === cur ? "true" : "false");
+    });
+    stPrev.disabled = cur === 0;
+    stNext.disabled = cur === STAGES.length - 1;
+  }
+  var stageTimer = null;
+  var stageDelay = null;
+  function stopStageAuto() {
+    clearInterval(stageTimer); clearTimeout(stageDelay);
+    stageTimer = null; stageDelay = null;
+  }
+  stBtns.forEach(function (b) {
+    b.addEventListener("click", function () { stopStageAuto(); drawStage(Number(b.dataset.i)); });
+  });
+  stPrev.addEventListener("click", function () { stopStageAuto(); drawStage(cur - 1); });
+  stNext.addEventListener("click", function () { stopStageAuto(); drawStage(cur + 1); });
+  drawStage(0);
+  if ("IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion:reduce)").matches) {
+    midView(document.querySelector("#stage .win"), function () {
+        stopStageAuto();
+        drawStage(0);
+        stageDelay = setTimeout(function () {
+          stageTimer = setInterval(function () {
+            drawStage(cur + 1);
+            if (cur === STAGES.length - 1) stopStageAuto();
+          }, 950);
+        }, 450);
+    }, function () { stopStageAuto(); drawStage(0); });
+  }
+
+  /* D-day — 앱의 색 규칙(3일 이내 빨강 / 그 외 대표색 / 지난 일정 회색) */
+  var ddR = document.getElementById("ddR");
+  var ddBig = document.getElementById("ddBig");
+  var ddCp = document.getElementById("ddCp");
+  var ddRow = document.getElementById("ddRow");
+  var ddCount = document.getElementById("ddCount");
+
+  function reorderDdayRows(days) {
+    var activeRow = ddRow.closest("tr");
+    var body = activeRow.parentNode;
+    var rows = Array.from(body.children);
+    rows.forEach(function (row, i) {
+      if (!row.dataset.sortIndex) row.dataset.sortIndex = String(i + 1);
+      if (row !== activeRow && row.dataset.remainingDays === undefined) {
+        var pill = row.querySelector(".dpill");
+        var label = pill ? (pill.dataset.value || pill.textContent).trim() : "";
+        row.dataset.remainingDays = label.startsWith("D-") ? String(Number(label.slice(2))) :
+          label.startsWith("D+") ? String(-Number(label.slice(2))) : label === "D-DAY" ? "0" : "none";
+      }
+    });
+    activeRow.dataset.remainingDays = String(days);
+    function dayOf(row) {
+      return row.dataset.remainingDays === "none" ? null : Number(row.dataset.remainingDays);
+    }
+    var ordered = rows.slice().sort(function (a,b) {
+      var x=dayOf(a), y=dayOf(b);
+      var gx=x===null?2:x<0?1:0, gy=y===null?2:y<0?1:0;
+      if(gx!==gy) return gx-gy;
+      var diff=gx===0?x-y:gx===1?y-x:0;
+      return diff || Number(a.dataset.sortIndex)-Number(b.dataset.sortIndex);
+    });
+    if (ordered.every(function(row,i){return row===rows[i];})) return;
+    var before = new Map(rows.map(function(row){return [row,row.getBoundingClientRect().top];}));
+    rows.forEach(function(row){row.getAnimations().forEach(function(animation){animation.cancel();});});
+    ordered.forEach(function(row){body.appendChild(row);});
+    if (!matchMedia("(prefers-reduced-motion:reduce)").matches) {
+      ordered.forEach(function(row){
+        var delta=before.get(row)-row.getBoundingClientRect().top;
+        if(delta) row.animate([{transform:"translateY("+delta+"px)"},{transform:"none"}],{duration:460,easing:"cubic-bezier(.22,.61,.36,1)"});
+      });
+    }
+  }
+
+  function drawDday() {
+    var d = Math.round(Number(ddR.value));
+    var t = d === 0 ? "D-DAY" : (d > 0 ? "D-" + d : "D+" + -d);
+    var c, cap;
+    if (d < 0) {
+      c = "#A1A5BA";
+      cap = "지난 일정입니다. 회색으로 변경해 표시합니다.";
+    } else if (d <= 3) {
+      c = "#D74949";
+      cap = "마감 3일 이내입니다. 빨강으로 바뀌고 마감 임박 타일에도 함께 집계됩니다.";
+    } else {
+      c = "#7E5FFC";
+      cap = "예정된 일정입니다. 대표색으로 표시하고 따로 경고하지 않습니다.";
+    }
+    setDdayText(ddBig, t);
+    ddBig.style.color = c;
+    ddCp.textContent = cap;
+    ddRow.textContent = t;
+    ddRow.closest("td").querySelector(".dnote").textContent = d < 0 ? "지난 면접" : d === 0 ? "면접 당일" : d <= 3 ? "면접 임박" : "면접 예정";
+    ddRow.style.background = c;
+    ddCount.textContent = (d >= 0 && d <= 3) ? "1" : "0";
+    reorderDdayRows(d);
+  }
+  var ddayTimer = null;
+  function stopDday() { cancelAnimationFrame(ddayTimer); ddayTimer = null; }
+  ddR.step = "0.01";
+  function setDdayText(el, text) {
+    if (el.dataset.value === text) return;
+    var previous = el.dataset.value;
+    el.dataset.value = text;
+    if (!previous || matchMedia("(prefers-reduced-motion:reduce)").matches) { el.textContent = text; return; }
+    var clip = document.createElement("span"); clip.className = "dd-reel";
+    var strip = document.createElement("span"); strip.className = "dd-strip";
+    [previous, text].forEach(function (value) { var item=document.createElement("span"); item.textContent=value; strip.appendChild(item); });
+    clip.appendChild(strip); el.replaceChildren(clip);
+    var motion = strip.animate([{transform:"translateY(0)"},{transform:"translateY(-50%)"}], {duration:330,easing:"cubic-bezier(.22,.65,.3,1)",fill:"forwards"});
+    motion.onfinish=function () { if (el.dataset.value===text && el.contains(clip)) el.textContent=text; };
+  }
+  var ddayVisible = false;
+  var ddayReduced = matchMedia("(prefers-reduced-motion:reduce)").matches;
+  function playDdayFrom(value, pause) {
+    stopDday();
+    var from = Number(value);
+    var end = Number(ddR.min);
+    if (!ddayVisible || ddayReduced || from <= end) return;
+    var started = null;
+    var duration = (from - end) * (9500 / 17);
+    function tick(now) {
+      if (started === null) started = now;
+      var progress = Math.max(0, Math.min(1, (now - started - (pause || 0)) / duration));
+      ddR.value = from + (end - from) * progress;
+      drawDday();
+      if (progress < 1) ddayTimer = requestAnimationFrame(tick);
+      else ddayTimer = null;
+    }
+    ddayTimer = requestAnimationFrame(tick);
+  }
+  ddR.addEventListener("input", function () {
+    drawDday();
+    playDdayFrom(ddR.value, 0);
+  });
+  ddR.value = 14; drawDday();
+  if ("IntersectionObserver" in window && !ddayReduced) {
+    midView(document.querySelector(".ddctl"), function () {
+      ddayVisible = true; stopDday(); ddR.value = 14; drawDday(); playDdayFrom(14, 650);
+    }, function () {
+      ddayVisible = false; stopDday(); ddR.value = 14; drawDday();
+    });
+  }
+
+  /* AI 프롬프트 — AiService.BuildPrompt와 같은 뼈대 */
+  var picks = Array.prototype.slice.call(document.querySelectorAll("#picks input"));
+  var pView = document.getElementById("pView");
+  var runBtn = document.getElementById("runBtn");
+  var editorLabel = document.getElementById("editorLabel");
+  var busy = null;
+  function drawPrompt() {
+    if (busy) { clearTimeout(busy); busy = null; }
+    runBtn.disabled = false;
+    runBtn.textContent = "🤖 AI 자소서 생성";
+    editorLabel.textContent = "자기소개서 내용";
+    var selected = picks.filter(function (item) { return item.checked; });
+    pView.textContent = selected.length
+      ? selected.map(function (item) { return "• " + item.dataset.t; }).join("\n\n")
+      : "반영할 항목을 선택해 주세요.";
+    pView.setAttribute("aria-busy", "false");
+    editorLabel.textContent = "선택한 항목";
+  }
+  picks.forEach(function (b) { b.addEventListener("change", drawPrompt); });
+  drawPrompt();
+  function buildExample() {
+    var paragraphs = ["저는 배운 내용을 실제 서비스의 문제 해결에 적용하며 개발 역량을 쌓아 왔습니다."];
+    if (picks[0].checked || picks[1].checked) {
+      var names = [];
+      if (picks[0].checked) names.push("정보처리기사");
+      if (picks[1].checked) names.push("SQLD");
+      paragraphs.push(names.join("와 ") + "를 준비하며 소프트웨어의 기본 구조와 데이터 처리 과정을 익혔습니다. 이론을 학습하는 데서 그치지 않고, 구현 과정에서 데이터가 어떻게 저장되고 활용되는지 살피려 노력했습니다.");
+    }
+    if (picks[2].checked) paragraphs.push("컴퓨터공학을 전공하며 프로그래밍과 자료구조의 기초를 익히고, 배운 개념을 코드로 구현하며 이해를 넓혔습니다.");
+    if (picks[3].checked) paragraphs.push("테크스타트에서 6개월간 백엔드 인턴으로 근무하며 REST API 개발을 보조했습니다. 요청과 응답의 흐름을 따라가며 기능을 이해하고, 맡은 업무를 정확히 수행하기 위해 관련 코드를 확인하는 습관을 길렀습니다.");
+    if (picks[4].checked) paragraphs.push("교내 개발 동아리에서는 프로젝트 리드를 맡아 구성원들과 작업 내용을 공유하고, 각자의 진행 상황을 확인하며 협업을 경험했습니다.");
+    if (picks[5].checked) paragraphs.push("프론트엔드 개발자로서 사용자가 정보를 이해하고 다음 행동으로 이어갈 수 있는 화면을 만드는 데 관심이 있습니다.");
+    paragraphs.push("입사 후에도 기능의 동작 원리를 꾸준히 배우고, 동료와 함께 사용자의 불편을 구체적으로 해결하는 개발자로 성장하겠습니다.");
+    return paragraphs.join("\n\n");
+  }
+  runBtn.addEventListener("click", function () {
+    if (busy) return;
+    runBtn.disabled = true;
+    runBtn.textContent = "생성 중…";
+    editorLabel.textContent = "자기소개서 작성 중";
+    pView.setAttribute("aria-busy", "true");
+    pView.textContent = "선택한 항목을 반영해 작성하고 있습니다…";
+    busy = setTimeout(function () {
+      busy = null;
+      pView.textContent = buildExample();
+      pView.setAttribute("aria-busy", "false");
+      editorLabel.textContent = "자기소개서 내용 · 생성 완료";
+      runBtn.textContent = "🤖 다시 생성";
+      runBtn.disabled = false;
+    }, 1100);
+  });
+
+  /* ── 스크롤 연출 ──
+     아래로 내려오며 들어올 때만 재생한다. 처음 화면에 이미 보이는 요소는 손대지 않으므로
+     페이지를 열자마자 읽을 내용은 전부 보인다. */
+  var REDUCE = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var HAS_IO = "IntersectionObserver" in window;
+
+  function playFromBelow(el, onEnter, onReset, at) {
+    if (el.matches("#why .sec-head, #why-schedule .sec-head")) {
+      if (el.getBoundingClientRect().top > innerHeight * TL.line(el)) onReset();
+      midView(el, onEnter, onReset, true);
+      return;
+    }
+    at = TL.line(el);   /* 윗변이 화면 가운데에 닿아야 시작. 끝부분이라 못 닿으면 80% 지점 */
+    var armed = el.getBoundingClientRect().top > window.innerHeight * at;
+    if (armed) { onReset(); }
+    MID.push({ el: el, go: function () { if (armed) { armed = false; onEnter(); } } });
+    TL.watch(el, function (e) {
+      if (e.isIntersecting && armed) { armed = false; onEnter(); }
+    });
+    new IntersectionObserver(function (es) {
+      var e = es[0];
+      if (!e.isIntersecting && e.boundingClientRect.top > 0 && !armed) { armed = true; onReset(); }
+    }).observe(el);
+  }
+
+  var watched = [];   /* 목차로 한 번에 건너뛰어도 숨은 채로 남지 않도록 쓸어 담는다 */
+
+  function watch(el, show, hide, at) {
+    watched.push({ el: el, show: show });
+    playFromBelow(el, show, hide, at);
+  }
+
+  if (!HAS_IO || REDUCE) {
+    /* 연출 없이 그대로 둔다 */
+  } else {
+    /* 1) 아래에서 떠오르기 — 형제 순서대로 조금씩 늦게 */
+    var SEL = "#why .xls, #why .win";
+    var nodes = Array.prototype.filter.call(document.querySelectorAll(SEL), function (el) {
+      return !el.classList.contains('no-motion') && !el.parentElement.closest(SEL);
+    });
+    nodes.forEach(function (el) {
+      var sibs = Array.prototype.filter.call(el.parentNode.children, function (c) {
+        return nodes.indexOf(c) !== -1;
+      });
+      var gap = el.matches(".feat, .sw, .meta li") ? 90 : 150;
+      el.style.setProperty("--d", (sibs.indexOf(el) % 6) * gap + "ms");
+      el.classList.add("rise", "box-enter");
+      watch(el,
+        function () { el.classList.remove("pre"); },
+        function () { el.classList.add("pre"); },
+        0.5);
+    });
+
+    // 색상 박스가 나타난 다음 설명을 이어서 재생합니다.
+    var palette = document.querySelector("#visual-design .design-palette");
+    var swatches = Array.from(palette.querySelectorAll(".design-swatch"));
+    var principles = Array.from(document.querySelectorAll("#visual-design .design-principles article"));
+    var designTimers = [];
+    swatches.concat(principles).forEach(function(el) {
+      el.classList.add("rise", "box-enter", "pre");
+      el.style.setProperty("--d", "0ms");
+    });
+    function clearDesignTimers() { designTimers.forEach(clearTimeout); designTimers = []; }
+    watch(palette, function() {
+      clearDesignTimers();
+      swatches.forEach(function(el, i) {
+        designTimers.push(setTimeout(function() { el.classList.remove("pre"); }, i * 150));
+      });
+      principles.forEach(function(el, i) {
+        designTimers.push(setTimeout(function() { el.classList.remove("pre"); }, 1150 + i * 120));
+      });
+      designTimers.push(setTimeout(function(){
+        document.getElementById("visual-design").dataset.sequenceComplete = "true";
+        document.dispatchEvent(new Event("jobmore:design-complete"));
+      }, 1150 + (principles.length - 1) * 120 + 950));
+    }, function() {
+      clearDesignTimers();
+      document.getElementById("visual-design").dataset.sequenceComplete = "false";
+      swatches.concat(principles).forEach(function(el) { el.classList.add("pre"); });
+    }, .6);
+
+    /* 2) 숫자 올라가기 — 1에서 최종 값까지 */
+    var NUM = /\d[\d,]*/g;
+    document.querySelectorAll(".count").forEach(function (el) {
+      var tpl = el.textContent;
+      var goals = (tpl.match(NUM) || []).map(function (n) { return Number(n.replace(/,/g, "")); });
+      if (!goals.length) { return; }
+      var run = 0;
+      function show(k) {
+        var i = 0;
+        el.textContent = tpl.replace(NUM, function () {
+          return Math.round(1 + (goals[i++] - 1) * k).toLocaleString("ko-KR");
+        });
+      }
+      playFromBelow(el, function () {
+        var id = ++run, t0 = performance.now();
+        (function tick(now) {
+          if (id !== run) { return; }
+          var k = Math.min(1, (now - t0) / 1500);
+          show(1 - Math.pow(1 - k, 3));
+          if (k < 1) { requestAnimationFrame(tick); }
+        })(t0);
+      }, function () { run++; show(0); }, 0.5);
+    });
+
+    /* 3) 합격률 막대가 왼쪽에서 자라남 */
+    document.querySelectorAll(".funnel").forEach(function (f) {
+      f.querySelectorAll(".fi").forEach(function (fi, i) { fi.style.setProperty("--i", i); });
+      f.classList.add("pre");
+      midView(f, function () { f.classList.remove("pre"); }, function () { f.classList.add("pre"); }, true);
+    });
+
+    /* 4) 도넛이 돌면서 나타나고 범례가 차례로 붙는다 */
+    document.querySelectorAll(".donut").forEach(function (d) {
+      d.querySelectorAll("li").forEach(function (li, i) { li.style.setProperty("--i", i); });
+      d.classList.add("pre");
+      midView(d, function () { d.classList.remove("pre"); }, function () { d.classList.add("pre"); }, true);
+    });
+
+    /* 6) 안전장치 — 목차 링크로 멀리 건너뛰어 관찰이 건너뛰어졌더라도
+          화면에 들어온 것은 반드시 보이게 한다 */
+    var sweeping = false;
+    function sweep() {
+      sweeping = false;
+      var bottom = atBottom();
+      watched.forEach(function (w) {
+        var limit = bottom ? window.innerHeight : window.innerHeight * TL.line(w.el);
+        var r = w.el.getBoundingClientRect();
+        if (r.top < limit && r.bottom > 0) { w.show(); }
+      });
+    }
+    window.addEventListener("scroll", function () {
+      if (!sweeping) { sweeping = true; requestAnimationFrame(sweep); }
+    }, { passive: true });
+    window.addEventListener("resize", sweep, { passive: true });
+  }
+
+  /* 자격증 검색 — CertificateCatalog.Search와 같은 규칙(이름 또는 발급기관) */
+  var CERTS = [
+    ["정보처리기사", "한국산업인력공단"], ["정보처리산업기사", "한국산업인력공단"],
+    ["정보처리기능사", "한국산업인력공단"], ["SQLD (SQL 개발자)", "한국데이터산업진흥원"],
+    ["SQLP (SQL 전문가)", "한국데이터산업진흥원"], ["ADsP (데이터분석 준전문가)", "한국데이터산업진흥원"],
+    ["ADP (데이터분석 전문가)", "한국데이터산업진흥원"], ["빅데이터분석기사", "한국데이터산업진흥원"],
+    ["리눅스마스터 1급", "한국정보통신진흥협회"], ["리눅스마스터 2급", "한국정보통신진흥협회"],
+    ["네트워크관리사 2급", "한국정보통신자격협회"], ["정보보안기사", "한국방송통신전파진흥원"],
+    ["전자계산기조직응용기사", "한국산업인력공단"], ["컴퓨터활용능력 1급", "대한상공회의소"],
+    ["컴퓨터활용능력 2급", "대한상공회의소"], ["워드프로세서", "대한상공회의소"],
+    ["ITQ", "한국생산성본부"], ["GTQ (그래픽기술자격)", "한국생산성본부"],
+    ["TOEIC", "ETS / YBM"], ["TOEIC Speaking", "ETS / YBM"], ["OPIc", "ACTFL / 크레듀"],
+    ["TOEFL", "ETS"], ["TEPS", "서울대학교"], ["JLPT (일본어능력시험)", "일본국제교류기금"],
+    ["JPT (일본어)", "YBM"], ["HSK (중국어)", "중국 교육부"], ["DELE (스페인어)", "스페인 교육부"],
+    ["컴퓨터활용능력 (사무)", "대한상공회의소"], ["전산회계 1급", "한국세무사회"],
+    ["전산회계 2급", "한국세무사회"], ["전산세무 1급", "한국세무사회"], ["전산세무 2급", "한국세무사회"],
+    ["재경관리사", "삼일회계법인"], ["ERP정보관리사 회계", "한국생산성본부"],
+    ["ERP정보관리사 인사", "한국생산성본부"], ["KBS한국어능력시험", "KBS"],
+    ["한국사능력검정시험 1급", "국사편찬위원회"], ["한국사능력검정시험 2급", "국사편찬위원회"],
+    ["매경TEST", "매일경제"], ["TESAT", "한국경제신문"], ["투자자산운용사", "금융투자협회"],
+    ["펀드투자권유대행인", "금융투자협회"], ["증권투자권유대행인", "금융투자협회"],
+    ["파생상품투자권유대행인", "금융투자협회"], ["신용분석사", "한국금융연수원"],
+    ["AFPK (재무설계사)", "한국FPSB"], ["CFP (국제공인재무설계사)", "한국FPSB"],
+    ["사회조사분석사 2급", "한국산업인력공단"], ["직업상담사 2급", "한국산업인력공단"],
+    ["산업안전기사", "한국산업인력공단"], ["위험물산업기사", "한국산업인력공단"],
+    ["전기기사", "한국산업인력공단"], ["전기산업기사", "한국산업인력공단"],
+    ["물류관리사", "한국산업인력공단"], ["유통관리사 2급", "대한상공회의소"],
+    ["국제무역사", "한국무역협회"], ["운전면허 1종보통", "도로교통공단"],
+    ["운전면허 2종보통", "도로교통공단"], ["한식조리기능사", "한국산업인력공단"],
+    ["바리스타 2급", "민간자격"], ["사회복지사 1급", "한국사회복지사협회"],
+    ["사회복지사 2급", "한국사회복지사협회"]
+  ];
+
+  var cq = document.getElementById("cq");
+  var chits = document.getElementById("chits");
+  var cheld = document.getElementById("cheld");
+  var held = [];
+
+  function esc(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function drawHeld() {
+    cheld.innerHTML = held.length
+      ? held.map(function (n) { return '<span class="tg2">' + esc(n) + "</span>"; }).join("")
+      : '<span class="nil">아직 담은 자격증이 없습니다</span>';
+  }
+  function drawHits() {
+    var raw = cq.value.trim();
+    var q = raw.toLowerCase();
+    var hits = q
+      ? CERTS.filter(function (c) {
+          return c[0].toLowerCase().indexOf(q) !== -1 || c[1].toLowerCase().indexOf(q) !== -1;
+        }).slice(0, 8)
+      : CERTS.slice(0, 8);
+    if (!hits.length) {
+      chits.innerHTML = '<p class="fnone">"' + esc(raw) + '"에 해당하는 자격증이 없습니다.</p>';
+      return;
+    }
+    chits.innerHTML = hits.map(function (c) {
+      var got = held.indexOf(c[0]) !== -1;
+      return '<div class="fhit' + (got ? " got" : "") + '">' +
+        '<span class="nm">' + esc(c[0]) + ' <span class="is">' + esc(c[1]) + "</span></span>" +
+        '<button type="button" data-n="' + esc(c[0]) + '">' + (got ? "담김" : "+ 담기") + "</button></div>";
+    }).join("");
+  }
+  chits.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-n]");
+    if (!b) { return; }
+    if (held.indexOf(b.dataset.n) === -1) { held.push(b.dataset.n); }
+    drawHeld();
+    drawHits();
+  });
+  cq.addEventListener("input", drawHits);
+  drawHits();
+  drawHeld();
+})();
+</script>
+
+<style>.pf-back{display:inline-grid;place-items:center;flex:none;width:34px;height:34px;margin-right:4px;border-radius:50%;background:transparent;color:#191f28;font:700 20px/1 system-ui,sans-serif;text-decoration:none;transition:background .2s ease,transform .2s ease}.pf-back:hover{background:rgba(25,31,40,.07);transform:translateX(-2px)}.pf-back:focus-visible{outline:2px solid #191f28;outline-offset:2px}</style>
+<style>.pf-back,.pf-back:hover{width:32px;height:32px;margin-right:8px;background:#191f28!important;color:#fff!important;font-size:16px}.pf-back:hover{background:#000!important}</style>
+<style>.pf-back{margin-right:-10px!important}</style>
+<style>
+/* 뒤로가기: 검정 동그라미 안 화살표, 마우스를 올리면 버튼 안에 '돌아가기'가 펼쳐진다 */
+.pf-back{display:inline-flex!important;align-items:center;justify-content:flex-start;gap:0;width:auto!important;min-width:32px;height:32px!important;padding:0 9px!important;
+  border-radius:999px!important;background:#191f28!important;color:#fff!important;font:600 13px/1 system-ui,'Pretendard','Noto Sans KR',sans-serif!important;
+  letter-spacing:-.01em;white-space:nowrap;overflow:hidden;transform:none!important;transition:gap .25s ease,padding .25s ease,background .2s ease!important}
+.pf-back .pf-arrow{font-size:15px;line-height:1;flex:none}
+.pf-back .pf-label{max-width:0;opacity:0;transition:max-width .3s ease,opacity .2s ease}
+.pf-back:hover,.pf-back:focus-visible{gap:6px;padding:0 13px 0 10px!important;background:#000!important}
+.pf-back:hover .pf-label,.pf-back:focus-visible .pf-label{max-width:5em;opacity:1}
+</style>
+<style>
+/* 평소엔 32px 검정 동그라미, 마우스를 올리면 오른쪽으로 늘어나 알약 모양이 되며 '돌아가기'가 보인다 */
+.pf-back{box-sizing:border-box!important;justify-content:flex-start!important;width:32px!important;min-width:0!important;max-width:32px;padding:0 0 0 9px!important;gap:6px!important;
+  transition:max-width .32s cubic-bezier(.2,.8,.2,1),width .32s cubic-bezier(.2,.8,.2,1),background .2s ease!important}
+.pf-back .pf-arrow{width:14px;text-align:center}
+.pf-back .pf-label{max-width:none!important;opacity:0;transition:opacity .18s ease!important}
+.pf-back:hover,.pf-back:focus-visible{width:96px!important;max-width:96px;padding:0 0 0 9px!important;gap:6px!important}
+.pf-back:hover .pf-label,.pf-back:focus-visible .pf-label{opacity:1;transition:opacity .2s ease .08s!important}
+</style>
+<style>.pf-back .pf-arrow{display:flex;align-items:center;justify-content:center;width:14px;height:14px}.pf-back .pf-label{line-height:1}
+/* Horizontal flow: center each node and its text in the same column. */
+@media(min-width:801px) {
+  .ui-flow>li { align-items:center; padding-right:0; }
+  .flow-content { text-align:center; padding-left:14px; padding-right:14px; }
+  .flow-content p { margin-left:auto; margin-right:auto; }
+  .flow-detail { justify-content:center; }
+  .ui-flow>li:not(:last-child):before,
+  .ui-flow>li:not(:last-child):after { left:calc(50% + 19px); right:auto; width:calc(100% - 38px); top:18px; }
+}
+
+@media(min-width:801px) {
+  .ui-flow .flow-content p { text-align:center; margin-left:auto; margin-right:auto; }
+  .ui-flow .flow-detail { text-align:center; justify-content:center; }
+}
+</style>
+<link rel="stylesheet" href="project-design.css">
+<style>
+#ai .steps{gap:28px 36px}
+#ai .step{padding-top:18px;min-width:0}
+#ai .step p{margin-top:12px;line-height:1.9;word-break:keep-all}
+@media(min-width:980px){#ai .steps{grid-template-columns:repeat(4,minmax(0,1fr))}}
+#visual-design .swatch-reason{margin:10px 0 0;font-size:13px;line-height:1.65;color:var(--fg-2);word-break:keep-all}
+/* Keep each flow description within its own column. */
+@media(min-width:801px){
+  #design .flow-content{box-sizing:border-box;width:100%;min-width:0;padding-left:20px;padding-right:20px}
+  #design .flow-content p{max-width:25ch;word-break:keep-all;overflow-wrap:break-word;line-height:1.9;margin-left:auto;margin-right:auto}
+}
+/* Scroll entrance belongs to static boxes; live demos keep their own motion. */
+#stage .two-col{align-items:start}
+#stage .track{margin-top:28px;row-gap:14px}
+#stage .sec-head{margin-bottom:36px}
+.box-enter.rise{--dur:.95s;--rise:26px}
+.final .final-content{display:flex;flex-direction:column;align-items:center;text-align:center}
+.final .final-app-icon{display:block;width:80px;height:80px;object-fit:contain;margin:0 auto 26px}
+.final .final-content h2{margin:0}
+.final-content.box-enter.rise{--dur:1.4s;--rise:28px;--d:0ms!important}
+</style>
+<style>#visual-design .design-swatch>div{display:grid;grid-template-rows:24px 20px 1fr;align-content:start}#visual-design .design-swatch b{line-height:24px}#visual-design .design-swatch small{line-height:20px}</style><style>.hero-app-identity{display:flex;align-items:center;gap:9px;margin-bottom:24px}.hero-app-identity img{display:block;width:56px;height:56px;object-fit:contain;border-radius:14px;box-sizing:border-box}.hero-app-identity span{font:700 21px/1.4 var(--font,sans-serif);letter-spacing:-.03em}</style><script>(function(){if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;var section=document.querySelector('.sec.final'),group=document.querySelector('.final-content');if(!section||!group)return;group.classList.add('rise','pre');group.style.setProperty('--d','0ms');var closingInView=false;function revealClosing(){var ready=document.getElementById('visual-design').dataset.sequenceComplete==='true';group.classList.toggle('pre',!(closingInView&&ready));}document.addEventListener('jobmore:design-complete',revealClosing);new IntersectionObserver(function(entries){closingInView=entries[0].isIntersecting;revealClosing();},{rootMargin:'0px 0px -'+Math.round(innerHeight*.2)+'px 0px',threshold:0}).observe(section);})();</script><style>.sec.final{height:auto;min-height:0;padding-block:clamp(36px,4vw,58px)!important}</style><style>
+/* Measure outer whitespace from the content group, not individual child margins. */
+.sec.final{height:auto;min-height:0;padding:clamp(36px,4vw,58px) 0!important}
+.sec.final .final-content{display:flex;flex-direction:column;align-items:center;gap:24px;margin-top:0;margin-bottom:0;padding-top:0;padding-bottom:0}
+.sec.final .final-content>img{display:block;margin:0!important}
+.sec.final .final-content>h2{margin:0!important}
+.sec.final .final-content>p,.sec.final .final-content>a{margin-top:0;margin-bottom:0}
+</style></body></html>

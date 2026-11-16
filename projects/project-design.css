@@ -1,0 +1,11 @@
+/* Project design rationale: large swatches, concise rules and project-specific colors. */
+.design-board{padding:64px 0;background:var(--d-bg);color:var(--d-ink)}
+.design-board .wrap{max-width:1120px;padding-inline:22px;margin-inline:auto}
+.design-board header>span{font-size:12px;letter-spacing:.05em;color:var(--d-point);font-weight:700}
+.design-board h2{font-size:clamp(28px,3.2vw,40px);line-height:1.4;margin:14px 0 20px;letter-spacing:-.035em}
+.design-board header>p{max-width:42em;font-size:16px;line-height:1.8;color:var(--d-sub)}
+.design-palette{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:36px 0}
+.design-swatch{border:1px solid var(--d-line);background:var(--d-card);overflow:hidden;border-radius:10px}
+.design-swatch>i{display:block;height:85px;background:var(--c)}.design-swatch>div{padding:13px}.design-swatch b{display:block;font-size:13px}.design-swatch small{font-size:11px;color:var(--d-sub)}
+.design-principles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px}.design-principles article{border-top:1px solid var(--d-line);padding-top:18px}.design-principles h3{font-size:19px;line-height:1.5;margin:0 0 12px}.design-principles p{font-size:14px;line-height:1.9;color:var(--d-sub);margin:0}
+@media(max-width:700px){.design-board{padding:45px 0}.design-palette{grid-template-columns:repeat(2,minmax(0,1fr))}.design-principles{grid-template-columns:1fr;gap:22px}}

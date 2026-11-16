@@ -1,0 +1,4 @@
+/* Gothic A1 (SIL OFL 1.1) — 메인 소개 제목용, 한글 2,350자 + 사이트 글자 서브셋 */
+@font-face{font-family:"Gothic A1";font-style:normal;font-weight:700;font-display:swap;src:url(GothicA1-Bold.woff2) format("woff2")}
+@font-face{font-family:"Gothic A1";font-style:normal;font-weight:800;font-display:swap;src:url(GothicA1-ExtraBold.woff2) format("woff2")}
+@font-face{font-family:"Gothic A1";font-style:normal;font-weight:900;font-display:swap;src:url(GothicA1-Black.woff2) format("woff2")}

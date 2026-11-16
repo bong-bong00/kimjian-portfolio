@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html lang="ko">
+<head><script>
+/* 상세 페이지는 언제 열어도 맨 위(첫 화면)에서 시작한다.
+   브라우저나 미리보기 창이 이전 스크롤 위치를 이어 붙이는 경우를 막고,
+   사용자가 먼저 스크롤을 시작했다면 더는 끌어올리지 않는다. */
+(function () {
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  var keepHash = location.hash && location.hash !== '#top';
+  var userMoved = false;
+  ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(function (t) {
+    addEventListener(t, function () { userMoved = true; }, { passive: true, once: true });
+  });
+  /* 부드러운 스크롤 설정이 있어도 '올라가는 모습'이 보이지 않게 즉시 이동 */
+  function toTop() {
+    if (keepHash || userMoved || window.scrollY === 0) return;
+    var de = document.documentElement, prev = de.style.scrollBehavior;
+    de.style.scrollBehavior = 'auto';
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    de.style.scrollBehavior = prev;
+  }
+  toTop();
+  addEventListener('DOMContentLoaded', toTop);
+  addEventListener('load', function () { toTop(); setTimeout(toTop, 80); setTimeout(toTop, 400); });
+  addEventListener('pageshow', toTop);
+})();
+</script>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>천하유적</title>
+<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="안내판 사진 한 장을 AI가 판독해 유적을 식별하는 다국어 문화유산 도슨트 앱, 천하유적">
+<link rel="stylesheet" href="../assets/fonts/app/common-fonts.css">
+<style>
+/* 레이아웃: 안내판을 읽어 내려가듯 한 화면에 한 가지씩. 돌의 질감(차가운 회백)이 바탕이고
+   단청 적갈색은 'AI가 읽어낸 것'에만 쓴다. 판독 결과·좌표·점수는 전부 고정폭 글꼴로 둔다. */
+:root {
+  --bg: #FAFAFA;
+  --surface: #FFFFFF;
+  --soft: #F2F0ED;
+  --line: #E4DFD8;
+  --ink: #3A2A20;
+  --ink-2: #6E5B4E;
+  --ink-3: #9C8B7E;
+  --dim: #C9BFB5;
+  --accent: #A0563A;
+  --accent-2: #D4A574;
+  --accent-soft: #F6EDE6;
+  --band: #241A14;
+  --band-fg: #F4F0EB;
+  --band-2: #A4968B;
+  --good: #6B8E5A;
+  --bad: #B85C50;
+  --shadow: 0 24px 54px rgba(58, 42, 32, .16);
+  --nav-bg: rgba(250, 250, 250, .88);
+  --font: "Noto Sans KR", "Apple SD Gothic Neo", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --serif: "Nanum Myeongjo", "Apple SD Gothic Neo", serif;
+  --stone: #2E241C;
+  --stone-fg: #E8DED2;
+  --stone-2: #A5947F;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17120F; --surface: #1F1813; --soft: #251D18; --line: #3A2E26;
+    --ink: #F2ECE6; --ink-2: #C3B4A8; --ink-3: #93847A; --dim: #4E4038;
+    --accent: #D98B64; --accent-2: #E0B98C; --accent-soft: #2E211A;
+    --band: #0F0B09; --band-fg: #F2ECE6; --band-2: #9C8E83;
+    --stone: #241C16; --stone-fg: #E8DED2; --stone-2: #9C8B77;
+    --shadow: 0 24px 54px rgba(0, 0, 0, .5);
+    --nav-bg: rgba(23, 18, 15, .88);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #17120F; --surface: #1F1813; --soft: #251D18; --line: #3A2E26;
+  --ink: #F2ECE6; --ink-2: #C3B4A8; --ink-3: #93847A; --dim: #4E4038;
+  --accent: #D98B64; --accent-2: #E0B98C; --accent-soft: #2E211A;
+  --band: #0F0B09; --band-fg: #F2ECE6; --band-2: #9C8E83;
+  --stone: #241C16; --stone-fg: #E8DED2; --stone-2: #9C8B77;
+  --shadow: 0 24px 54px rgba(0, 0, 0, .5);
+  --nav-bg: rgba(23, 18, 15, .88);
+  color-scheme: dark;
+}
+
+html { scroll-padding-top: 76px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font); font-size: 17px; line-height: 1.72;
+  word-break: keep-all; overflow-wrap: anywhere;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+  z-index: 30; background: var(--bg);
+}
+h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+h1, h2, h3, h4 { text-wrap: balance; font-weight: 600; letter-spacing: -0.035em; }
+img { display: block; max-width: 100%; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 8px; }
+
+.wrap {
+  max-width: 1120px; margin-inline: auto;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+}
+.section { padding-block: clamp(56px, 7vw, 104px); }
+h2 { font-size: clamp(29px, 4vw, 48px); line-height: 1.26; }
+h3 { font-size: clamp(21px, 2.3vw, 29px); line-height: 1.34; }
+.body { color: var(--ink-2); max-width: 32em; font-size: clamp(16px, 1.5vw, 18px); }
+.sec-head { margin-bottom: clamp(32px, 4vw, 54px); }
+.sec-head .body { margin-top: 18px; }
+mark { background: var(--accent-soft); color: var(--accent); padding: 0 .18em; border-radius: .14em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+/* 내비게이션 */
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 25; background: var(--nav-bg);
+  -webkit-backdrop-filter: saturate(1.3) blur(14px); backdrop-filter: saturate(1.3) blur(14px); transition: box-shadow .3s; }
+.nav.scrolled { box-shadow: 0 1px 0 var(--line); }
+.nav-inner { display: flex; align-items: center; gap: 24px; min-height: 68px; }
+.brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; font-size: 19px; text-decoration: none; letter-spacing: -0.02em; }
+.brand img { width: 34px; height: 34px; border-radius: 10px; box-shadow: 0 2px 6px rgba(58, 42, 32, .12); }
+.nav-links { display: flex; gap: 22px; margin-left: auto; font-size: 14.5px; font-weight: 600; color: var(--ink-3); }
+.nav-links a { text-decoration: none; transition: color .25s; }
+.nav-links a:hover, .nav-links a.on { color: var(--ink); }
+@media (max-width: 720px) { .nav-links { display: none; } }
+
+/* 히어로 */
+.hero { padding-block: clamp(44px, 6vw, 84px) clamp(48px, 6vw, 92px); overflow: hidden; }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: clamp(32px, 5vw, 64px); align-items: center; }
+.hero-mark { width: 56px; height: 56px; border-radius: 17px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(58, 42, 32, .14); }
+.hero h1 { font-size: clamp(36px, 5.6vw, 68px); line-height: 1.18; letter-spacing: -0.045em; }
+.hero .lead { margin-top: 22px; font-size: clamp(16.5px, 1.6vw, 19px); color: var(--ink-2); max-width: 26em; }
+.role-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 30px; }
+.role-row li { display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 11px; background: var(--soft); font-size: 14.5px; font-weight: 600; color: var(--ink-2); }
+.role-row li.lead-role { background: var(--accent); color: #fff; }
+
+/* 안내판 → 판독 (히어로 연출) */
+.slab-stage { display: grid; gap: 16px; justify-items: center; }
+.slab {
+  position: relative; width: min(100%, 420px); aspect-ratio: 4 / 3; overflow: hidden;
+  border-radius: 20px; background: #6B6660; box-shadow: var(--shadow);
+}
+.slab img { width: 100%; height: 100%; object-fit: cover; }
+.scanline { position: absolute; inset: 0 0 auto; height: 44%; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(160, 86, 58, 0) 0%, rgba(160, 86, 58, .22) 72%, rgba(212, 165, 116, .9) 100%); }
+@media (prefers-reduced-motion: no-preference) { .scanline { animation: scan 3.6s cubic-bezier(.5, 0, .5, 1) infinite; } }
+@keyframes scan { 0%, 8% { transform: translateY(-110%); } 50% { transform: translateY(128%); } 92%, 100% { transform: translateY(-110%); } }
+.slab-corner { position: absolute; width: 26px; height: 26px; border: 0 solid var(--accent-2); }
+.slab-corner.tl { top: 14px; left: 14px; border-top-width: 3px; border-left-width: 3px; border-top-left-radius: 6px; }
+.slab-corner.tr { top: 14px; right: 14px; border-top-width: 3px; border-right-width: 3px; border-top-right-radius: 6px; }
+.slab-corner.bl { bottom: 14px; left: 14px; border-bottom-width: 3px; border-left-width: 3px; border-bottom-left-radius: 6px; }
+.slab-corner.br { bottom: 14px; right: 14px; border-bottom-width: 3px; border-right-width: 3px; border-bottom-right-radius: 6px; }
+.readout { width: min(100%, 420px); background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px 18px; }
+.readout .rtag { font-family: var(--mono); font-size: 11.5px; font-weight: 600; letter-spacing: .1em; color: var(--ink-3); text-transform: uppercase; }
+.readout p { margin-top: 7px; font-size: 15px; line-height: 1.6; }
+.readout .hit { display: flex; align-items: center; gap: 9px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 14px; color: var(--ink-2); }
+.readout .hit b { color: var(--ink); }
+.readout .hit .sc { margin-left: auto; font-family: var(--mono); font-weight: 600; color: var(--accent); }
+
+/* 유물 카드식 기록 줄 */
+.record { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; margin-top: clamp(38px, 5vw, 60px); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.record > div { padding: 18px 20px; border-left: 1px solid var(--line); min-width: 0; }
+.record > div:first-child { border-left: 0; padding-left: 0; }
+.record dt { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: .14em; color: var(--ink-3); text-transform: uppercase; }
+.record dd { margin-top: 5px; font-size: 15px; font-weight: 600; line-height: 1.5; letter-spacing: -0.015em; }
+@media (max-width: 860px) {
+  .record { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .record > div { border-left: 0; border-top: 1px solid var(--line); padding-inline: 0 16px; }
+  .record > div:first-child, .record > div:nth-child(2) { border-top: 0; }
+}
+
+/* 문제 정의 — 같은 안내판을 세 번 읽기 */
+.signboard { background: var(--soft); }
+.sign-switch { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 5px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); }
+.sign-switch button { padding: 10px 18px; border: 0; border-radius: 12px; background: none; color: var(--ink-2); font: 600 14.5px/1.2 var(--font); cursor: pointer; transition: background .25s, color .25s; }
+.sign-switch button:hover { color: var(--ink); }
+.sign-switch button[aria-selected="true"] { background: var(--accent); color: #fff; }
+.sign-stage { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 52px); align-items: center; margin-top: 26px; }
+.plaque { margin: 0; }
+.plate {
+  position: relative; border-radius: 10px; padding: clamp(26px, 3.4vw, 42px) clamp(24px, 3.4vw, 44px);
+  background: var(--stone); color: var(--stone-fg);
+  box-shadow: inset 0 0 0 1px rgba(232, 222, 210, .14), inset 0 0 0 7px rgba(232, 222, 210, .06), var(--shadow);
+  transition: background .5s ease, color .5s ease, box-shadow .5s ease;
+}
+.plate.app { background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line), inset 0 0 0 7px rgba(160, 86, 58, .06), var(--shadow); }
+.plate-kicker { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: var(--stone-2); transition: color .5s ease; }
+.plate.app .plate-kicker { color: var(--accent); }
+.plate-head { margin-top: 12px; font-family: var(--serif); font-size: clamp(27px, 3.4vw, 40px); font-weight: 600; line-height: 1.26; letter-spacing: .01em; }
+.plate.app .plate-head { font-family: var(--font); font-weight: 600; letter-spacing: -0.035em; }
+.plate-rows { display: grid; gap: 0; margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(232, 222, 210, .18); transition: border-color .5s ease; }
+.plate.app .plate-rows { border-top-color: var(--line); }
+.plate-rows > div { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 14px; padding: 6px 0; font-size: 15px; }
+.plate-rows dt { color: var(--stone-2); font-weight: 400; transition: color .5s ease; }
+.plate.app .plate-rows dt { color: var(--ink-3); }
+.plate-rows dd { font-weight: 600; letter-spacing: -0.01em; }
+.plate-note { margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(232, 222, 210, .18); font-size: clamp(15px, 1.5vw, 16.5px); line-height: 1.8; color: var(--stone-fg); transition: border-color .5s ease, color .5s ease; }
+.plate.app .plate-note { border-top-color: var(--line); color: var(--ink-2); }
+.plate-stamp { position: absolute; right: clamp(20px, 3vw, 34px); top: clamp(22px, 3vw, 36px); display: grid; place-items: center; width: 42px; height: 42px; border-radius: 9px; border: 2px solid rgba(232, 222, 210, .3); color: var(--stone-2); font-family: var(--serif); font-size: 19px; font-weight: 600; transition: border-color .5s ease, color .5s ease, background .5s ease; }
+.plate.app .plate-stamp { border-color: transparent; background: none; padding: 0; }
+.plate-stamp img { width: 100%; height: 100%; border-radius: 9px; object-fit: contain; }
+@media (prefers-reduced-motion: no-preference) {
+  .plate-fade { animation: plateIn .5s cubic-bezier(.16, .85, .2, 1) both; }
+}
+@keyframes plateIn { from { opacity: 0; transform: translateY(8px); } }
+.sign-read { display: grid; gap: 14px; align-content: center; }
+.sign-read .who { font-family: var(--mono); font-size: 11.5px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+.sign-read h3 { font-size: clamp(21px, 2.3vw, 27px); }
+.sign-read p { font-size: clamp(15.5px, 1.5vw, 17px); line-height: 1.75; color: var(--ink-2); }
+.sign-read .gap { display: inline-flex; align-items: center; gap: 8px; padding: 9px 15px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); font-size: 14px; font-weight: 600; color: var(--ink-2); justify-self: start; }
+.sign-read .gap i { width: 8px; height: 8px; border-radius: 50%; background: var(--bad); font-style: normal; }
+.sign-read .gap.ok i { background: var(--good); }
+
+/* 답사 동선 — 관람자가 정류장을 골라 하나씩 본다 (스크롤·자동 전환 없음) */
+.route-sec { background: var(--soft); }
+.route { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: clamp(30px, 4vw, 48px); --p: 0; --seal: 62px; }
+.route::before, .route-fill { content: ""; position: absolute; left: 12.5%; top: calc(var(--seal) / 2 - 1px); height: 0; border-top: 2px dashed var(--dim); }
+.route::before { right: 12.5%; }
+.route-fill { width: calc(75% * var(--p)); border-top: 2px solid var(--accent); }
+@media (prefers-reduced-motion: no-preference) { .route-fill { transition: width .55s cubic-bezier(.16, .85, .2, 1); } }
+.stop { position: relative; z-index: 1; display: grid; justify-items: center; align-content: start; gap: 6px; min-width: 0; padding: 0 6px 4px; border: 0; background: none; color: var(--ink-3); font: inherit; text-align: center; cursor: pointer; }
+.stop .seal { display: grid; place-items: center; width: var(--seal); height: var(--seal); margin-bottom: 6px; border-radius: 12px; border: 2px solid var(--dim); background: var(--soft); font-family: var(--serif); font-size: calc(var(--seal) * .42); font-weight: 600; line-height: 1; color: var(--ink-3); transition: background .3s, border-color .3s, color .3s, transform .35s cubic-bezier(.16, .85, .2, 1), box-shadow .3s; }
+.stop:hover .seal { border-color: var(--accent-2); color: var(--accent); }
+.stop.passed .seal { border-color: var(--accent); color: var(--accent); }
+.stop[aria-selected="true"] .seal { background: var(--accent); border-color: var(--accent); color: #fff; transform: rotate(-4deg); box-shadow: 0 8px 18px rgba(160, 86, 58, .28); }
+.stop-no { font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: .08em; color: var(--ink-3); }
+.stop-name { font-size: 16px; font-weight: 600; line-height: 1.35; letter-spacing: -0.02em; color: var(--ink-2); }
+.stop[aria-selected="true"] .stop-name { color: var(--ink); }
+.stop-sub { font-size: 13px; line-height: 1.45; color: var(--ink-3); }
+.stop:focus-visible { outline: none; }
+.stop:focus-visible .seal { outline: 3px solid var(--accent); outline-offset: 4px; }
+
+.exhibit { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(28px, 4.4vw, 60px); align-items: center; }
+.vitrine { position: relative; margin: 0; display: grid; justify-items: center; padding: clamp(30px, 4vw, 46px) 20px 0; border-radius: 6px; border: 1px solid var(--line); overflow: hidden;
+  background: radial-gradient(90% 60% at 50% 0%, var(--surface) 0%, var(--bg) 82%); }
+.vitrine::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(118deg, transparent 58%, rgba(255, 255, 255, .22) 63%, transparent 69%); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .vitrine::after { opacity: .3; } }
+:root[data-theme="dark"] .vitrine::after { opacity: .3; }
+.vitrine .phone { --pw: 264px; position: relative; z-index: 1; }
+.plinth { position: relative; width: min(86%, 340px); margin-top: -1px; padding: 16px 16px 18px; border: 1px solid var(--line); border-bottom: 0; border-radius: 3px 3px 0 0; background: linear-gradient(var(--surface), var(--soft)); box-shadow: 0 -1px 0 var(--line); text-align: center; }
+.plinth::before { content: ""; position: absolute; left: 50%; top: -9px; width: 66%; height: 12px; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(closest-side, rgba(58, 42, 32, .22), transparent); }
+.plinth span { display: inline-block; padding: 4px 12px; border-radius: 3px; background: var(--soft); border: 1px solid var(--line); font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); }
+
+.caption { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: clamp(24px, 3vw, 38px); box-shadow: 0 16px 34px rgba(58, 42, 32, .06); }
+.caption::before { content: ""; position: absolute; left: clamp(24px, 3vw, 38px); top: -1px; width: 44px; height: 3px; background: var(--accent); }
+.caption h3 { font-family: var(--serif); font-weight: 600; letter-spacing: -0.01em; font-size: clamp(24px, 2.5vw, 31px); }
+.cap-sub { margin-top: 6px; font-size: 15px; color: var(--ink-3); }
+.cap-body { margin-top: 22px; display: grid; }
+.cap-body > div { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 16px; padding: 16px 0; border-top: 1px solid var(--line); }
+.cap-body dt { padding-top: 2px; font-size: 13.5px; font-weight: 600; color: var(--ink-3); }
+.bul { display: grid; gap: 8px; }
+.bul li { position: relative; padding-left: 16px; font-size: 15.5px; line-height: 1.6; color: var(--ink-2); }
+.bul li::before { content: ""; position: absolute; left: 0; top: .62em; width: 6px; height: 6px; border-radius: 1.5px; background: var(--accent-2); }
+.cap-foot { display: flex; align-items: center; gap: 12px; padding-top: 16px; border-top: 1px solid var(--line); }
+.cap-foot .mono { font-size: 12.5px; color: var(--ink-3); }
+.cap-next { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); color: var(--ink); font: 600 14px/1.2 var(--font); cursor: pointer; transition: border-color .2s, color .2s; }
+.cap-next:hover { border-color: var(--accent); color: var(--accent); }
+@media (prefers-reduced-motion: no-preference) { .caption.fade { animation: plateIn .45s cubic-bezier(.16, .85, .2, 1) both; } }
+
+/* 폰 목업 + 앱 화면 재현 — lib/features 위젯 구조를 그대로 옮김 */
+.phone { --pw: 300px; width: var(--pw); max-width: 100%; padding: calc(var(--pw) * .028); background: #17120F; border-radius: calc(var(--pw) * .15); box-shadow: var(--shadow); }
+.screens { position: relative; display: grid; border-radius: calc(var(--pw) * .122); overflow: hidden; background: #FAFAFA; aspect-ratio: 300 / 620; }
+.screens > .scr { grid-area: 1 / 1; opacity: 0; visibility: hidden; transform: translateY(14px) scale(.98); transition: opacity .45s ease, transform .55s cubic-bezier(.16, .85, .2, 1), visibility 0s linear .55s; }
+@media (prefers-reduced-motion: reduce) { .screens > .scr { transition: none; } }
+.screens > .scr.on { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+.screens > .err-shot { grid-area: 1 / 1; opacity: 1; transform: none; width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+
+/* 앱은 lightTheme 고정이라 기기 안은 항상 밝은 화면 */
+.scr { display: flex; flex-direction: column; min-height: 0; background: #FAFAFA; color: #5C3D2E; font-size: 11px; line-height: 1.45; }
+.scr-body { flex: 1; min-height: 0; padding: 13px 14px 0; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+.scr-nav { flex: none; display: grid; grid-template-columns: repeat(4, 1fr); padding: 7px 2px 11px; background: #fff; box-shadow: 0 -3px 12px rgba(160, 86, 58, .05); }
+.scr-nav div { display: grid; justify-items: center; gap: 2px; font-size: 8px; font-weight: 500; color: #C4A789; }
+.scr-nav div.on { color: #A0563A; font-weight: 600; }
+.scr-nav i { font-style: normal; font-size: 14px; line-height: 1; }
+.lbl { font-size: 10px; font-weight: 800; letter-spacing: .08em; color: #5C3D2E; }
+
+/* 홈 */
+.home-top { display: flex; align-items: flex-start; gap: 8px; }
+.loc-pill { display: inline-flex; align-items: center; gap: 3px; padding: 3px 7px; border-radius: 999px; background: rgba(160, 86, 58, .06); color: #A0563A; font-size: 7.5px; font-weight: 700; letter-spacing: .1em; }
+.app-title { margin-top: 8px; font-size: 21px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
+.app-sub { margin-top: 3px; font-size: 9.5px; color: #A67B5B; }
+.lang-pill { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 6px 9px; border-radius: 999px; background: #fff; box-shadow: 0 3px 9px rgba(160, 86, 58, .07); font-size: 12px; }
+.lang-pill em { font-style: normal; font-size: 8px; color: #A67B5B; }
+.search-row { display: flex; align-items: center; gap: 9px; }
+.search-field { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 13px; border-radius: 999px; background: #fff; box-shadow: 0 3px 9px rgba(160, 86, 58, .07); color: #C4A789; font-size: 9.5px; }
+.cam-btn { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 12px; background: #A0563A; color: #fff; font-size: 15px; box-shadow: 0 4px 10px rgba(160, 86, 58, .35); }
+.cat-chips { display: flex; gap: 5px; overflow: hidden; }
+.cat-chips span { flex: none; padding: 5px 11px; border-radius: 999px; background: #fff; box-shadow: 0 2px 7px rgba(160, 86, 58, .06); font-size: 9px; font-weight: 700; color: #5C3D2E; }
+.cat-chips span.on { background: #A0563A; color: #fff; box-shadow: 0 3px 9px rgba(160, 86, 58, .25); }
+.cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.cat-card b { display: block; margin-top: 5px; font-size: 10px; font-weight: 800; letter-spacing: -0.02em; }
+.cat-card i { display: block; height: 62px; border-radius: 13px; background: #EFE4D2 center / cover; box-shadow: 0 3px 9px rgba(160, 86, 58, .07); }
+.near-row { display: flex; gap: 9px; overflow: hidden; }
+.near-item { flex: none; width: 74px; }
+.near-item i { display: block; width: 74px; height: 74px; border-radius: 13px; background: #EFE4D2 center / cover; box-shadow: 0 3px 9px rgba(160, 86, 58, .07); }
+.near-item b { display: block; margin-top: 5px; font-size: 9.5px; font-weight: 700; }
+.near-item span { font-size: 8px; color: #A67B5B; }
+
+/* 인식 */
+.id-head { display: flex; align-items: center; gap: 9px; }
+.id-head i { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 9px; background: #A0563A; color: #fff; font-size: 13px; font-style: normal; }
+.id-head b { display: block; font-size: 13px; font-weight: 800; letter-spacing: -0.02em; }
+.id-head span { font-size: 8px; color: #A67B5B; }
+.id-prev { aspect-ratio: 4 / 3; border-radius: 13px; overflow: hidden; background: #fff; box-shadow: 0 3px 9px rgba(160, 86, 58, .07); }
+.id-prev img { width: 100%; height: 100%; object-fit: cover; }
+.pick-row { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.pick { display: flex; align-items: center; justify-content: center; gap: 5px; padding: 8px; border-radius: 13px; background: #fff; box-shadow: 0 3px 9px rgba(160, 86, 58, .07); font-size: 10px; font-weight: 700; }
+.pick em { font-style: normal; color: #A0563A; font-size: 11px; }
+.analyze { display: grid; place-items: center; padding: 9px; border-radius: 13px; background: #A0563A; color: #fff; font-size: 11px; font-weight: 700; box-shadow: 0 4px 10px rgba(160, 86, 58, .3); }
+.res-card { padding: 10px 12px; border-radius: 13px; background: #fff; box-shadow: 0 3px 9px rgba(160, 86, 58, .07); font-size: 9.5px; line-height: 1.6; }
+.match-tile { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 13px; background: #fff; box-shadow: 0 3px 9px rgba(160, 86, 58, .07); font-size: 10px; font-weight: 700; }
+.match-tile em { font-style: normal; color: #A0563A; font-size: 11px; }
+.match-tile .sc { margin-left: auto; font-weight: 600; font-size: 9px; color: #A67B5B; }
+.match-tile .ch { color: #C4A789; font-size: 10px; }
+.err-text { font-size: 9.5px; line-height: 1.6; color: #B85C50; }
+
+/* 문화재 상세 */
+.dt-hero { flex: none; height: 36%; position: relative; }
+.dt-hero img { width: 100%; height: 100%; object-fit: cover; }
+.dt-hero .rnd { position: absolute; top: 10px; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: rgba(255, 255, 255, .9); font-size: 10px; color: #5C3D2E; }
+.dt-hero .rnd.l { left: 10px; }
+.dt-hero .rnd.r { right: 10px; }
+.dt-body { flex: 1; min-height: 0; padding: 12px 14px 0; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+.dt-badge { align-self: flex-start; padding: 3px 8px; border-radius: 999px; background: rgba(160, 86, 58, .1); color: #A0563A; font-size: 7.5px; font-weight: 800; letter-spacing: .05em; }
+.dt-name { font-size: 19px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; }
+.dt-meta { display: flex; align-items: center; gap: 5px; font-size: 9px; color: #A67B5B; font-weight: 500; }
+.analogy { border-radius: 13px; border: 1px solid rgba(160, 86, 58, .15); background: rgba(160, 86, 58, .04); padding: 10px 11px; }
+.ana-top { display: flex; align-items: center; gap: 6px; }
+.ana-pill { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 999px; background: #A0563A; color: #fff; font-size: 7px; font-weight: 800; letter-spacing: .06em; }
+.ana-top .cty { margin-left: auto; font-size: 8px; font-weight: 600; color: #C4A789; }
+.analogy h5 { margin: 7px 0 0; font-size: 11.5px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.25; }
+.analogy p { margin: 6px 0 0; font-size: 9px; line-height: 1.6; color: #5C3D2E; }
+.ana-foot { display: flex; align-items: center; gap: 4px; margin-top: 7px; font-size: 7.5px; font-weight: 500; color: rgba(160, 86, 58, .7); }
+.fab { align-self: flex-end; display: inline-flex; align-items: center; gap: 5px; margin-top: auto; margin-bottom: 12px; padding: 8px 13px; border-radius: 999px; background: #A0563A; color: #fff; font-size: 9.5px; font-weight: 700; box-shadow: 0 5px 14px rgba(160, 86, 58, .35); }
+
+/* 컬렉션 */
+.coll-title { font-size: 19px; font-weight: 800; letter-spacing: -0.03em; }
+.coll-row { display: flex; align-items: center; gap: 9px; padding: 7px; border-radius: 12px; background: #fff; box-shadow: 0 3px 9px rgba(160, 86, 58, .06); }
+.coll-row i { flex: none; width: 34px; height: 34px; border-radius: 10px; background: #EFE4D2 center / cover; font-style: normal; }
+.coll-row b { font-size: 10px; font-weight: 700; }
+.coll-row span { display: block; font-size: 8px; color: #A67B5B; }
+.empty-box { border-radius: 13px; background: #fff; box-shadow: 0 3px 9px rgba(160, 86, 58, .06); padding: 14px; display: grid; justify-items: center; gap: 5px; text-align: center; }
+.empty-box i { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: #EFE4D2; color: #C4A789; font-size: 14px; font-style: normal; }
+.empty-box b { font-size: 9.5px; font-weight: 700; }
+.empty-box span { font-size: 8px; color: #A67B5B; line-height: 1.5; }
+
+/* 찾아낸 유적 — 왼쪽은 탁본(돌), 오른쪽은 대장(종이) */
+.match-sec { background: var(--bg); }
+.match-grid { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: clamp(22px, 3.2vw, 40px); align-items: start; }
+.rubbing { border-radius: 10px; padding: clamp(22px, 2.8vw, 32px); background: var(--stone); color: var(--stone-fg);
+  box-shadow: inset 0 0 0 1px rgba(232, 222, 210, .14), inset 0 0 0 7px rgba(232, 222, 210, .06), var(--shadow); }
+.rub-title { font-family: var(--serif); font-size: 22px; font-weight: 600; letter-spacing: .01em; }
+.rub-title small { margin-left: 8px; font-family: var(--mono); font-size: 12px; font-weight: 400; letter-spacing: .06em; color: var(--stone-2); }
+.preset-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 18px; }
+.preset { padding: 8px 13px; border-radius: 6px; border: 1px solid rgba(232, 222, 210, .24); background: transparent; color: var(--stone-fg); font: 600 13.5px/1.2 var(--font); cursor: pointer; transition: background .2s, color .2s, border-color .2s; }
+.preset:hover { border-color: var(--accent-2); }
+.preset[aria-pressed="true"] { background: var(--accent-2); border-color: var(--accent-2); color: #241A14; }
+.ocr-field { display: block; width: 100%; box-sizing: border-box; margin-top: 16px; min-height: 150px; resize: vertical; padding: 16px 18px; border: 1px solid rgba(232, 222, 210, .18); border-radius: 6px; background: rgba(0, 0, 0, .2); color: var(--stone-fg); font: 400 14.5px/1.85 var(--mono); }
+.ocr-field:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+.field-cap { display: block; margin-top: 12px; font-size: 13.5px; color: var(--stone-2); }
+
+.ledger { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: clamp(20px, 2.6vw, 30px); }
+.ledger-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding-bottom: 14px; border-bottom: 3px double var(--line); }
+.ledger-head b { font-family: var(--serif); font-size: 22px; font-weight: 600; }
+.ledger-head span { margin-left: auto; font-family: var(--mono); font-size: 12px; color: var(--ink-3); }
+.lrow { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto auto; gap: 6px 12px; align-items: center; padding: 13px 0; border-bottom: 1px solid var(--line); }
+.lno { font-family: var(--mono); font-size: 12px; color: var(--ink-3); }
+.lrow b { font-size: 16px; font-weight: 600; }
+.lrow .val { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.lrow.hit .val { color: var(--accent); }
+.lrow .stamp { padding: 2px 7px; border: 1.5px solid var(--dim); border-radius: 4px; font-size: 12px; font-weight: 600; color: var(--ink-3); }
+.lrow .stamp { margin-right: 3px; }
+.lrow.hit .stamp { border-color: var(--accent); color: var(--accent); transform: rotate(-4deg); }
+.lrow .bar { position: relative; grid-column: 2 / -1; height: 5px; border-radius: 3px; background: var(--soft); }
+.lrow .bar::after { content: ""; position: absolute; left: 30%; top: -4px; bottom: -4px; width: 2px; border-radius: 1px; background: var(--ink-3); opacity: .55; }
+.lrow .bar i { position: relative; z-index: 1; display: block; height: 100%; width: var(--w, 0%); border-radius: 3px; background: var(--dim); }
+@media (prefers-reduced-motion: no-preference) { .lrow .bar i { transition: width .5s cubic-bezier(.16, .85, .2, 1); } }
+.lrow.hit .bar i { background: var(--accent); }
+.lrow .why { grid-column: 2 / -1; font-family: var(--mono); font-size: 11.5px; line-height: 1.55; color: var(--ink-3); }
+.verdict { margin-top: 18px; padding: 13px 16px; border: 1.5px solid var(--accent); border-radius: 4px; background: var(--accent-soft); color: var(--accent); font-size: 14.5px; font-weight: 600; }
+.verdict.none { border-color: var(--dim); background: var(--soft); color: var(--ink-3); }
+.formula-t { margin-top: 26px; font-family: var(--serif); font-size: 17px; font-weight: 600; }
+.formula { display: grid; margin-top: 10px; border-top: 1px solid rgba(232, 222, 210, .18); }
+.formula li { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 14px; padding: 11px 0; border-bottom: 1px solid rgba(232, 222, 210, .12); font-size: 14.5px; line-height: 1.6; color: var(--stone-fg); }
+.formula li:last-child { border-bottom: 0; padding-bottom: 0; }
+.formula b { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--accent-2); }
+.axis-note { margin-top: 12px; font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); }
+
+/* 보존 처리 기록 — 훼손(이전) → 보존(현재) */
+.cons { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; }
+.cons-meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-bottom: 3px double var(--line); }
+.cons-meta > div { padding: 16px 24px; border-left: 1px solid var(--line); min-width: 0; }
+.cons-meta > div:first-child { border-left: 0; }
+.cons-meta dt { font-size: 13px; font-weight: 600; color: var(--ink-3); }
+.cons-meta dd { margin-top: 3px; font-size: 15px; font-weight: 600; line-height: 1.5; }
+.cons-spec { display: grid; grid-template-columns: minmax(0, 1fr) 64px minmax(0, 1fr); gap: 18px; align-items: start; padding: clamp(26px, 3.4vw, 44px) clamp(20px, 3vw, 40px); }
+.spec { display: grid; justify-items: center; gap: 16px; margin: 0; text-align: center; }
+.spec .phone { --pw: 236px; }
+.spec-tag { display: inline-flex; align-items: center; gap: 7px; padding: 5px 12px; border-radius: 4px; font-size: 13.5px; font-weight: 600; }
+.spec-tag.before { background: rgba(184, 92, 80, .12); color: var(--bad); }
+.spec-tag.after { background: rgba(107, 142, 90, .15); color: var(--good); }
+.spec figcaption { max-width: 22em; font-size: 14.5px; line-height: 1.65; color: var(--ink-2); text-align: left; }
+.spec code { font-family: var(--mono); font-size: 13px; color: var(--accent); }
+.cons-arrow { align-self: center; display: grid; justify-items: center; gap: 6px; color: var(--ink-3); font-size: 13px; font-weight: 600; }
+.cons-arrow i { font-style: normal; font-size: 26px; line-height: 1; color: var(--accent); }
+.cons-log { border-top: 1px solid var(--line); }
+.cons-log li { display: grid; grid-template-columns: 112px 150px minmax(0, 1fr); gap: 16px; padding: 15px 24px; border-bottom: 1px solid var(--line); font-size: 15px; }
+.cons-log li:last-child { border-bottom: 0; }
+.cons-log li.hd { padding-block: 10px; background: var(--soft); font-size: 12.5px; font-weight: 600; color: var(--ink-3); }
+.cons-log .k { font-family: var(--mono); font-size: 12.5px; font-weight: 600; letter-spacing: .06em; color: var(--accent); padding-top: 2px; }
+.cons-log b { font-weight: 600; }
+.cons-log span { color: var(--ink-2); line-height: 1.6; }
+
+/* 프롬프트 비문 */
+.inscription { border-radius: 10px; padding: clamp(24px, 3vw, 36px); background: var(--stone); color: var(--stone-fg);
+  box-shadow: inset 0 0 0 1px rgba(232, 222, 210, .14), inset 0 0 0 7px rgba(232, 222, 210, .06), var(--shadow); }
+.inscription .plabel { display: block; font-family: var(--serif); font-size: 20px; font-weight: 600; }
+.inscription .plabel small { margin-left: 8px; font-family: var(--mono); font-size: 12px; font-weight: 400; color: var(--stone-2); }
+.inscription pre { margin: 16px 0 0; padding-top: 16px; border-top: 1px solid rgba(232, 222, 210, .18); font-family: var(--mono); font-size: 13.5px; line-height: 1.8; white-space: pre-wrap; overflow-wrap: anywhere; }
+.inscription .v { color: var(--accent-2); }
+.inscription .guard-w { color: #E8A194; font-weight: 600; }
+.prompt-out { margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(232, 222, 210, .18); }
+.prompt-out > b { display: block; font-size: 13.5px; color: var(--stone-2); margin-bottom: 8px; }
+.prompt-out .bul li { color: var(--stone-fg); font-size: 15px; }
+
+/* 안료 견본 + 토큰 명세 */
+.design-sec { background: var(--soft); }
+.chips { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; background: var(--surface); }
+.chip { display: grid; min-width: 0; border-left: 1px solid var(--line); }
+.chip:first-child { border-left: 0; }
+.chip i { display: block; height: clamp(96px, 11vw, 150px); background: var(--c); box-shadow: inset 0 -1px 0 rgba(120, 100, 88, .18); }
+.chip div { padding: 12px 14px 14px; }
+.chip b { display: block; font-size: 14px; }
+.chip span { font-family: var(--mono); font-size: 12px; color: var(--ink-3); }
+.spec-table { margin-top: clamp(26px, 3vw, 38px); border-top: 2px solid var(--ink); }
+.spec-table > div { display: grid; grid-template-columns: 110px minmax(0, 210px) minmax(0, 1fr); gap: 16px; padding: 15px 0; border-bottom: 1px solid var(--line); }
+.spec-table dt { font-weight: 600; }
+.spec-table .vals { font-family: var(--mono); font-size: 13.5px; color: var(--accent); padding-top: 2px; }
+.spec-table p { font-size: 15px; color: var(--ink-2); }
+
+/* 전시 안내도 — 기능 다섯 가지 */
+.directory { border-top: 2px solid var(--ink); }
+.directory a { display: grid; grid-template-columns: 56px minmax(0, 250px) minmax(0, 1fr) 28px; gap: 20px; align-items: center; padding: 20px 4px; border-bottom: 1px solid var(--line); text-decoration: none; transition: background .25s; }
+.directory a:hover { background: var(--soft); }
+.dseal { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 10px; border: 2px solid var(--accent); color: var(--accent); font-family: var(--serif); font-size: 23px; font-weight: 600; line-height: 1; transition: background .25s, color .25s, transform .3s; }
+.directory a:hover .dseal { background: var(--accent); color: #fff; transform: rotate(-4deg); }
+.dname { font-size: clamp(18px, 1.8vw, 21px); font-weight: 600; letter-spacing: -0.03em; }
+.dval { font-size: 15.5px; color: var(--ink-2); line-height: 1.6; }
+.darr { color: var(--ink-3); font-size: 18px; transition: transform .25s, color .25s; }
+.directory a:hover .darr { color: var(--accent); transform: translateX(4px); }
+
+/* 판독 절차 */
+.pipeline { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
+.pipeline li { position: relative; display: grid; gap: 6px; align-content: start; padding: 20px 26px 22px; border-left: 1px solid var(--line); }
+.pipeline li:first-child { border-left: 0; }
+.pipeline li + li::before { content: "→"; position: absolute; left: -12px; top: 18px; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--surface); border: 1px solid var(--line); color: var(--accent); font-size: 12px; }
+.pipeline b { font-size: 16.5px; font-weight: 600; }
+.pipeline span { font-size: 14.5px; color: var(--ink-2); line-height: 1.6; }
+.pipeline code, .ep { justify-self: start; padding: 3px 9px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); font-family: var(--mono); font-size: 12.5px; color: var(--ink-3); }
+.pipe-note { margin: 14px 0 clamp(28px, 3.4vw, 40px); font-size: 14.5px; color: var(--ink-3); }
+
+/* 자국 비유 */
+.analogy-sec { background: var(--soft); }
+.ana-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(28px, 4vw, 56px); align-items: start; }
+.ana-card { margin: 0; padding: clamp(22px, 2.6vw, 30px); border-radius: 22px; background: #FFFFFF; border: 1px solid rgba(160, 86, 58, .18); box-shadow: 0 14px 34px rgba(160, 86, 58, .1); color: #5C3D2E; }
+.ac-top { display: flex; align-items: center; gap: 10px; }
+.ac-pill { padding: 4px 11px; border-radius: 999px; background: #A0563A; color: #fff; font-size: 12.5px; font-weight: 600; }
+.ac-cty { margin-left: auto; font-size: 13.5px; font-weight: 600; color: #C4A789; }
+.ac-title { margin-top: 14px; font-size: clamp(20px, 2vw, 24px); font-weight: 600; letter-spacing: -0.03em; line-height: 1.35; }
+.ac-body { margin-top: 10px; font-size: 15.5px; line-height: 1.75; }
+.ac-foot { margin-top: 14px; font-size: 13px; font-weight: 600; color: rgba(160, 86, 58, .75); }
+.ana-points { margin-top: 24px; }
+.ask { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr) auto; gap: 18px 36px; align-items: start; margin-top: clamp(36px, 4.4vw, 56px); padding-top: clamp(26px, 3vw, 36px); border-top: 2px solid var(--ink); }
+.ask h3 { font-size: clamp(20px, 2vw, 24px); }
+
+/* 다국어 — 도판 주석 */
+.lang-grid { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: clamp(28px, 4vw, 56px); align-items: center; }
+.lang-head { margin-bottom: 0; }
+.langs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; }
+.langs li { padding: 9px 16px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); font-size: 16px; font-weight: 600; }
+.annot { margin: 0; display: grid; gap: 22px; }
+.annot-plate { padding: 28px 22px; border-radius: 6px; border: 1px solid var(--line); background: radial-gradient(90% 70% at 50% 0%, var(--surface), var(--soft)); overflow: hidden; }
+.annot-frag { width: 300px; zoom: 1.25; margin-inline: auto; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow); }
+.annot-frag .scr-body { padding-bottom: 14px; }
+.annot .pin, .annot-list .pin { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); color: #fff; font: 600 10px/1 var(--mono); font-style: normal; }
+.annot-frag .pin { position: absolute; width: 15px; height: 15px; font-size: 8.5px; background: #A0563A; box-shadow: 0 0 0 2px #fff; }
+.annot-frag .lang-pill, .annot-frag .app-title { position: relative; }
+.annot-frag .pin.p1 { right: -6px; top: -7px; }
+.annot-frag .pin.p2 { right: -18px; top: -4px; }
+.annot-frag .app-title { width: max-content; }
+.annot-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.annot-list li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; }
+.annot-list .pin { width: 22px; height: 22px; font-size: 11.5px; margin-top: 1px; }
+.annot-list b { display: block; font-size: 15.5px; font-weight: 600; }
+.annot-list span { font-size: 14.5px; color: var(--ink-2); line-height: 1.6; }
+
+/* 오류 대응 섹션 배경 */
+.guard-sec { background: var(--soft); }
+
+/* 방문 기록 — 답사 수첩 시연 */
+.rec-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(28px, 4vw, 56px); align-items: start; }
+.logbook { position: relative; padding: clamp(20px, 2.6vw, 28px); border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
+.lb-head { display: flex; align-items: center; gap: 12px; padding-bottom: 14px; border-bottom: 3px double var(--line); }
+.lb-head > b { font-family: var(--serif); font-size: 22px; font-weight: 600; }
+.net { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; padding: 7px 13px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); color: var(--ink); font: 600 13.5px/1.2 var(--font); cursor: pointer; }
+.net i { width: 9px; height: 9px; border-radius: 50%; background: var(--good); }
+.net[aria-pressed="false"] i { background: var(--bad); }
+.net[aria-pressed="false"] { color: var(--bad); }
+.lb-sites li { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.lb-thumb { width: 44px; height: 44px; border-radius: 10px; background: #EFE4D2 center / cover; }
+.lb-sites b { display: block; font-size: 15.5px; font-weight: 600; }
+.lb-sites span { font-size: 13px; color: var(--ink-3); }
+.visit { padding: 7px 12px; border: 1.5px solid var(--line); border-radius: 6px; background: none; color: var(--ink-2); font: 600 13px/1.2 var(--font); cursor: pointer; transition: border-color .2s, color .2s, background .2s, transform .3s; }
+.visit:hover { border-color: var(--accent); color: var(--accent); }
+.visit[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); transform: rotate(-3deg); cursor: default; }
+.lb-flow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; margin-top: 16px; }
+.lb-box { min-height: 112px; padding: 12px 14px; border-radius: 4px; background: var(--soft); }
+.lb-box > b { display: block; font-size: 13.5px; font-weight: 600; color: var(--ink-2); }
+.lb-box small { font-family: var(--mono); font-size: 11.5px; font-weight: 400; color: var(--ink-3); }
+.lb-box ul { display: grid; gap: 6px; margin-top: 8px; }
+.lb-box li { padding: 5px 9px; border-radius: 4px; background: var(--surface); border: 1px solid var(--line); font-size: 13.5px; font-weight: 600; }
+@media (prefers-reduced-motion: no-preference) { .lb-box li { animation: plateIn .4s cubic-bezier(.16, .85, .2, 1) both; } }
+.lb-empty { margin-top: 8px; font-size: 13px; color: var(--ink-3); }
+.lb-status { margin-top: 14px; font-size: 14px; line-height: 1.6; color: var(--ink-2); }
+.lb-reset { margin-top: 10px; padding: 0; border: 0; background: none; color: var(--ink-3); font: 600 13px/1.4 var(--font); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.lb-reset:hover { color: var(--accent); }
+.rec-notes .cap-body { margin-top: 0; }
+.rec-notes .cap-body > div:last-child { border-bottom: 1px solid var(--line); }
+.demo-note { margin-top: 14px; font-size: 13.5px; color: var(--ink-3); }
+
+/* 마무리 */
+.final { text-align: center; background: var(--bg); }
+
+.final h2 { font-size: clamp(30px, 4.6vw, 54px); }
+.final .body { margin: 20px auto 0; }
+.final .seal-big { width: 76px; height: 76px; margin: 0 auto 24px; border-radius: 22px; box-shadow: 0 10px 26px rgba(58, 42, 32, .16); }
+footer { border-top: 1px solid var(--line); }
+.foot { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: center; padding-block: 28px 36px; font-size: 13.5px; color: var(--ink-3); }
+
+
+@media (max-width: 900px) {
+  .hero-grid, .exhibit, .match-grid, .ana-grid, .lang-grid, .rec-grid, .sign-stage { grid-template-columns: minmax(0, 1fr); }
+  .ask { grid-template-columns: minmax(0, 1fr); }
+  .directory a { grid-template-columns: 52px minmax(0, 1fr) 24px; }
+  .directory .dval { grid-column: 2; grid-row: 2; margin-top: -12px; }
+  .directory .darr { grid-column: 3; grid-row: 1; }
+  .directory .dseal { grid-row: span 2; align-self: start; }
+  .chips { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .chip:nth-child(4) { border-left: 0; }
+  .chip:nth-child(n+4) { border-top: 1px solid var(--line); }
+  .cons-spec { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .cons-arrow { display: none; }
+}
+@media (max-width: 640px) {
+  .route { --seal: 46px; }
+  .stop { padding-inline: 2px; }
+  .stop-name { font-size: 13.5px; }
+  .stop-sub { display: none; }
+  .vitrine { padding-inline: 14px; }
+  .cap-body > div { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .cons-meta { grid-template-columns: minmax(0, 1fr); }
+  .cons-meta > div { border-left: 0; border-top: 1px solid var(--line); padding: 12px 20px; }
+  .cons-meta > div:first-child { border-top: 0; }
+  .cons-spec { grid-template-columns: minmax(0, 1fr); gap: 34px; }
+  .cons-log li { grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 14px 20px; }
+  .cons-log li.hd { display: none; }
+  .spec-table > div { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .formula li { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .chips { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .chip:nth-child(4) { border-left: 1px solid var(--line); }
+  .chip:nth-child(odd) { border-left: 0; }
+  .chip:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .pipeline { grid-template-columns: minmax(0, 1fr); }
+  .pipeline li { border-left: 0; border-top: 1px solid var(--line); padding: 18px 20px; }
+  .pipeline li:first-child { border-top: 0; }
+  .pipeline li + li::before { content: "↓"; left: auto; right: 16px; top: -12px; }
+  .annot-list { grid-template-columns: minmax(0, 1fr); }
+  .annot-plate { padding: 14px; }
+  .annot-frag { zoom: 1; max-width: 100%; }
+  .lb-sites li { grid-template-columns: 40px minmax(0, 1fr) auto; }
+  .lb-thumb { width: 40px; height: 40px; }
+}
+
+</style>
+<link rel="stylesheet" href="../assets/fonts/app/cheonha-fonts.css">
+<style>
+/* 천하유적 글꼴: 제목·본문 모두 붓맛 있는 명조 Hahmlet (고운바탕은 획이 가늘어 본문이 흐려 보여 교체).
+   앱 화면 재현(.scr)은 실제 앱처럼 고딕, 판독값은 고정폭 그대로 */
+:root:root { --font: "Hahmlet", "Nanum Myeongjo", "Apple SD Gothic Neo", serif; --title: "Hahmlet", "Nanum Myeongjo", serif; }
+:root:not([data-theme="dark"]) { --ink-2: #4E3D32; --ink-3: #85725F; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink-2: #C3B4A8; --ink-3: #93847A; } }
+body { font-weight: 400; }
+h1, h2, h3, h4, h5 { font-family: var(--title); font-weight: 500 !important; letter-spacing: -0.035em; }
+.scr, .scr *, .phone, .phone * { font-family: "Noto Sans KR", "Apple SD Gothic Neo", system-ui, sans-serif; }
+</style>
+<style>
+.cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: 0 24px; border-radius: 14px; font: 600 16px/1 var(--font); text-decoration: none; transition: transform .15s ease, filter .15s ease; }
+.btn:hover { transform: translateY(-2px); }
+.btn svg { width: 19px; height: 19px; fill: currentColor; }
+.btn.sig { background: var(--accent); color: #fff; }
+.btn.ghost { background: var(--soft); color: var(--ink); }
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="wrap nav-inner">
+    <a class="pf-back" href="../index.html#projects" aria-label="포트폴리오로 돌아가기"><span class="pf-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M13 8H3M7.5 3.5 3 8l4.5 4.5"/></svg></span><span class="pf-label">돌아가기</span></a>
+    <div class="nav-links">
+      <a href="#concept">기획</a>
+      <a href="#route">이용 흐름</a>
+      <a href="#features">기능</a>
+      <a href="#design">디자인</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero section" id="top">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <div class="hero-app-identity"><img src="img/cheonha/icon.webp" alt="" width="56" height="56"><span>천하유적</span></div>
+        <h1>안내판 앞에서<br>멈추지 않도록</h1>
+        <p class="lead">한자와 전문 용어로 가득한 안내판을 사진 한 장으로 판독하고, 외국인에게는 자국 문화에 빗대어 설명하는 다국어 문화유산 도슨트 앱.</p>
+        <div class="cta">
+          <a class="btn sig" href="https://github.com/bong-bong00/cheonha_heritage" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub 저장소</a>
+          <a class="btn ghost" href="#features">기능 보기</a>
+        </div>
+      </div>
+      <div class="heritage-scene" aria-label="안개가 걷힌 불국사 정면을 휴대폰으로 촬영하는 장면">
+        <div class="temple-sun"></div>
+        <div class="temple-crop"><img class="temple-cutout" src="img/cheonha/bulguksa-front-cutout.png" alt="불국사 정면의 자하문과 돌계단"></div>
+        <div class="heritage-mist mist-left"></div><div class="heritage-mist mist-right"></div><div class="heritage-mist mist-front"></div>
+        <div class="capture-phone actual-home"><svg class="actual-home-screen" viewBox="1840 180 590 1245" role="img" aria-label="천하유적 앱 홈 화면" preserveAspectRatio="xMidYMid meet"><image href="../thumbs/cheonha-center-hd.webp" width="3344" height="1882"/></svg></div>
+      </div>
+    </div>
+
+  </div>
+</header>
+
+<section class="section signboard" id="concept">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>같은 안내판을 세 번 읽어보면</h2>
+      <p class="body">유적 안내판에는 한자와 익숙하지 않은 용어가 많습니다. 원문과 번역만으로 이해하기 어려운 내용을 사진 인식과 쉬운 설명으로 보완했습니다.</p>
+    </div>
+
+    <div class="sign-switch" role="tablist" aria-label="안내판 읽는 방식">
+      <button type="button" role="tab" id="tab0" aria-selected="true" aria-controls="plate">안내판 원문</button>
+      <button type="button" role="tab" id="tab1" aria-selected="false" aria-controls="plate">기계 번역</button>
+      <button type="button" role="tab" id="tab2" aria-selected="false" aria-controls="plate">천하유적</button>
+    </div>
+
+    <div class="sign-stage">
+      <figure class="plaque">
+        <div class="plate" id="plate" role="tabpanel" aria-labelledby="tab0">
+          <span class="plate-stamp" id="pStamp" aria-hidden="true"></span>
+          <span class="plate-example" id="plateExample" hidden>일본인 관광객 예시</span><span class="plate-kicker" id="pKicker">보물 제61호</span>
+          <div class="plate-profile"><figure class="sign-context-photo"><img src="img/cheonha/seokdeung-reference.png" alt="불국사 대웅전 앞 석등의 전체 모습"><figcaption>안내판이 설명하는 문화재 · 불국사 대웅전 앞 석등</figcaption></figure><div class="plate-profile-copy"><div class="plate-title-row"><h3 class="plate-head" id="pHead">佛國寺 大雄殿 앞 石燈</h3></div>
+          <dl class="plate-rows" id="pRows">
+            <div><dt>指定</dt><dd>寶物 第61號</dd></div>
+            <div><dt>時代</dt><dd>統一新羅</dd></div>
+            <div><dt>所在地</dt><dd>慶尙北道 慶州市 進峴洞</dd></div>
+          </dl></div></div>
+          <div class="plate-explanation"><p class="plate-note" id="pNote">八角 石燈으로 下臺石에 伏蓮, 上臺石에 仰蓮을 새겼으며 統一新羅 石燈의 典型을 보여준다.</p></div>
+        </div>
+      </figure>
+
+      <div class="sign-read">
+        
+        <h3 id="rTitle">글자를 읽어도 용어를 이해하기 어렵다</h3>
+        <p id="rBody">한글과 한자를 읽더라도 하대석·복련·앙련 같은 용어는 별도로 찾아봐야 합니다. 안내판을 읽은 뒤에도 석등의 구조와 특징을 이해하기 어렵습니다.</p>
+        <span class="gap" id="rGap"><i></i><span id="rGapText">전문 용어 6개 · 한자 표기 그대로</span></span>
+        
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+
+<section class="section route-sec" id="route">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>위치에서 시작해 기록으로 끝나는 답사</h2>
+      <p class="body">목업의 터치 표시를 따라 화면이 바뀝니다. 주변 탐색부터 기록 확인까지 살펴보세요.</p>
+    </div>
+
+    <div class="route" id="routeLine" role="tablist" aria-label="유적 탐색의 네 단계">
+      <span class="route-fill" aria-hidden="true"></span>
+      <button type="button" class="stop" role="tab" id="stop0" aria-selected="true" aria-controls="exhibit" tabindex="0"><span class="stop-no">01</span><span class="stop-name">현재 위치</span><span class="stop-sub">경주시 · 반경 5km</span></button>
+      <button type="button" class="stop" role="tab" id="stop1" aria-selected="false" aria-controls="exhibit" tabindex="-1"><span class="stop-no">02</span><span class="stop-name">안내판 촬영</span><span class="stop-sub">첨성대 안내판 판독</span></button>
+      <button type="button" class="stop" role="tab" id="stop2" aria-selected="false" aria-controls="exhibit" tabindex="-1"><span class="stop-no">03</span><span class="stop-name">상세 · 자국 비유</span><span class="stop-sub">유적 설명 · 추가 질문</span></button>
+      <button type="button" class="stop" role="tab" id="stop3" aria-selected="false" aria-controls="exhibit" tabindex="-1"><span class="stop-no">04</span><span class="stop-name">컬렉션</span><span class="stop-sub">방문 기록 · 공유 카드</span></button>
+    </div>
+
+    <div class="exhibit" id="exhibit" role="tabpanel" aria-labelledby="stop0">
+      <figure class="vitrine">
+        <div class="phone">
+          <div class="screens" id="screens"><span class="demo-touch" aria-hidden="true"></span>
+            <!-- 1. 홈 — home_screen.dart -->
+            <div class="scr on" data-scr="0">
+              <div class="scr-body">
+                <div class="home-top">
+                  <div style="flex:1;min-width:0">
+                    <span class="loc-pill">◎ 경주시 ↻</span>
+                    <div class="app-title">천하유적</div>
+                    <div class="app-sub">내 손 안의 경주를 만나다</div>
+                  </div>
+                  <span class="lang-pill">🇰🇷<em>▾</em></span>
+                </div>
+                <div class="search-row">
+                  <div class="search-field">⌕ 유적지 혹은 유적 검색</div>
+                  <span class="cam-btn">◉</span>
+                </div>
+                <div class="lbl">카테고리</div>
+                <div class="cat-chips"><span class="on">사찰</span><span>왕릉</span><span>궁</span><span>천문</span></div>
+                <div class="cat-grid"><div class="cat-card"><i style="background-image:url(img/cheonha/bunhwangsa.jpg)"></i><b>분황사</b></div><div class="cat-card"><i style="background-image:url(img/cheonha/magoksa.jpg)"></i><b>마곡사</b></div></div>
+                <div class="lbl">내 주변</div><div class="near-row"><div class="near-item"><i style="background-image:url(img/cheonha/cheonmachong.jpg)"></i><b>천마총</b><span>1.1 km</span></div><div class="near-item"><i style="background-image:url(img/cheonha/wolji.jpg)"></i><b>동궁과 월지</b><span>1.8 km</span></div><div class="near-item"><i style="background-image:url(img/cheonha/poseokjeong.jpg)"></i><b>포석정지</b><span>3.4 km</span></div></div>
+              </div>
+              <div class="scr-nav"><div class="on"><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3.5 10.5 12 4l8.5 6.5V20H15v-5.5H9V20H3.5z"/></svg></i>홈</div><div><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M4 5.5h6a2 2 0 0 1 2 2V20a2.4 2.4 0 0 0-2-1.4H4zM20 5.5h-6a2 2 0 0 0-2 2V20a2.4 2.4 0 0 1 2-1.4h6z"/></svg></i>AI 가이드</div><div><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3.5 8.5h3.2l1.6-2h7.4l1.6 2h3.2V19H3.5z"/><circle cx="12" cy="13.2" r="3.1"/></svg></i>인식</div><div><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M7.5 4.5h13v13h-13z"/><path d="M4.5 7.5v12h12"/></svg></i>컬렉션</div></div>
+            </div>
+            <!-- 2. 인식 — identify_screen.dart -->
+            <div class="scr" data-scr="1">
+              <div class="scr-body">
+                <div class="id-head"><i>◉</i><div><b>인식</b><span>간판·표지판을 스캔하세요</span></div></div>
+                <div class="id-prev"><img src="img/cheonha/cheomseongdae.jpg" alt="촬영한 안내판 사진"></div>
+                <div class="pick-row"><span class="pick"><em>◉</em>카메라</span><span class="pick"><em>▣</em>갤러리</span></div>
+                <div class="analyze">분석하기</div>
+                <div class="lbl">판독 결과</div>
+                <div class="res-card">경주 첨성대 · 안내판에서 유적 이름과 설명을 확인했습니다.</div>
+                <div class="lbl">매칭된 유적지</div>
+                <div class="match-tile"><em>⌂</em>첨성대<span class="sc">60%</span><span class="ch">›</span></div>
+              </div>
+              <div class="scr-nav"><div><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3.5 10.5 12 4l8.5 6.5V20H15v-5.5H9V20H3.5z"/></svg></i>홈</div><div><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M4 5.5h6a2 2 0 0 1 2 2V20a2.4 2.4 0 0 0-2-1.4H4zM20 5.5h-6a2 2 0 0 0-2 2V20a2.4 2.4 0 0 1 2-1.4h6z"/></svg></i>AI 가이드</div><div class="on"><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3.5 8.5h3.2l1.6-2h7.4l1.6 2h3.2V19H3.5z"/><circle cx="12" cy="13.2" r="3.1"/></svg></i>인식</div><div><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M7.5 4.5h13v13h-13z"/><path d="M4.5 7.5v12h12"/></svg></i>컬렉션</div></div>
+            </div>
+            <!-- 3. 문화재 상세 + 자국 비유 — heritage_widget.dart · HeritageItemScreen -->
+            <div class="scr" data-scr="2">
+              <div class="dt-hero">
+                <img src="img/cheonha/seokguram.jpg" alt="석굴암">
+                <span class="rnd l">‹</span><span class="rnd r">↥</span>
+              </div>
+              <div class="dt-body">
+                <span class="dt-badge">경주의 문화유산</span>
+                <div class="dt-name">석굴암</div>
+                <div class="dt-meta">유적 상세 안내</div>
+                <div class="analogy">
+                  <div class="ana-top"><span class="ana-pill">⊕ 자국 비유</span><span class="cty">일본</span></div>
+                  <h5>돌로 만든 공간을 이해하는 방법</h5>
+                  <p>익숙한 종교 건축의 예배 공간을 떠올려 보세요. 석굴암의 내부 공간과 불상이 어떻게 배치되어 있는지 차례로 살펴볼 수 있습니다.</p>
+                  <div class="ana-foot">✦ AI 생성 · 국적에 맞춰 조정됨</div>
+                </div>
+                <span class="fab">◌ 물어보기</span>
+              </div>
+              <div class="scr-nav"><div class="on"><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3.5 10.5 12 4l8.5 6.5V20H15v-5.5H9V20H3.5z"/></svg></i>홈</div><div><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M4 5.5h6a2 2 0 0 1 2 2V20a2.4 2.4 0 0 0-2-1.4H4zM20 5.5h-6a2 2 0 0 0-2 2V20a2.4 2.4 0 0 1 2-1.4h6z"/></svg></i>AI 가이드</div><div><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3.5 8.5h3.2l1.6-2h7.4l1.6 2h3.2V19H3.5z"/><circle cx="12" cy="13.2" r="3.1"/></svg></i>인식</div><div><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M7.5 4.5h13v13h-13z"/><path d="M4.5 7.5v12h12"/></svg></i>컬렉션</div></div>
+            </div>
+            <!-- 4. 컬렉션 — collection_screen.dart -->
+            <div class="scr" data-scr="3">
+              <div class="scr-body">
+                <div class="coll-title">컬렉션</div>
+                <div class="lbl">방문 기록</div><div class="coll-row"><i style="background-image:url(img/cheonha/beopjusa.jpg)"></i><div><b>법주사</b><span>충청북도 보은군</span></div></div><div class="coll-row"><i style="background-image:url(img/cheonha/hwaseong.jpg)"></i><div><b>수원 화성</b><span>경기도 수원시</span></div></div><div class="coll-row"><i style="background-image:url(img/cheonha/changdeokgung.jpg)"></i><div><b>창덕궁</b><span>서울특별시 종로구</span></div></div><div class="coll-row"><i style="background-image:url(img/cheonha/cheonmachong.jpg)"></i><div><b>천마총</b><span>경상북도 경주시</span></div></div><div class="coll-row"><i style="background-image:url(img/cheonha/jongmyo.jpg)"></i><div><b>종묘</b><span>서울특별시 종로구</span></div></div><div class="lbl">공유 카드</div>
+                <div class="empty-box"><i>↥</i><b>아직 만든 카드가 없어요</b><span>유적을 공유하면<br>여기에 카드가 모여요</span></div>
+              </div>
+              <div class="scr-nav"><div><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3.5 10.5 12 4l8.5 6.5V20H15v-5.5H9V20H3.5z"/></svg></i>홈</div><div><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M4 5.5h6a2 2 0 0 1 2 2V20a2.4 2.4 0 0 0-2-1.4H4zM20 5.5h-6a2 2 0 0 0-2 2V20a2.4 2.4 0 0 1 2-1.4h6z"/></svg></i>AI 가이드</div><div><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3.5 8.5h3.2l1.6-2h7.4l1.6 2h3.2V19H3.5z"/><circle cx="12" cy="13.2" r="3.1"/></svg></i>인식</div><div class="on"><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M7.5 4.5h13v13h-13z"/><path d="M4.5 7.5v12h12"/></svg></i>컬렉션</div></div>
+            </div>
+          </div>
+        </div>
+        
+      </figure>
+
+      <div class="captions">
+        <article class="caption"><div class="flow-chapter"><span>사용 흐름</span><b>01<small> / 04</small></b></div><div class="flow-copy"><h3>주변 유적을 고릅니다</h3><p class="route-description">현재 위치 주변의 유적을 사진과 거리로 확인합니다. 이름을 알고 있다면 검색해서 찾을 수도 있습니다.</p><p class="route-description route-extra">사찰·왕릉·궁 같은 분류로 범위를 좁히고, 가까운 장소의 사진을 보며 방문할 곳을 고릅니다. 마음에 드는 유적을 누르면 그곳의 소개와 문화재를 확인할 수 있습니다.</p></div></article>
+
+        <article class="caption" hidden><div class="flow-chapter"><span>사용 흐름</span><b>02<small> / 04</small></b></div><div class="flow-copy"><h3>안내판을 촬영합니다</h3><p class="route-description">안내판을 찍거나 갤러리에서 사진을 고릅니다. 읽어 낸 글과 해당 유적을 한 화면에서 확인합니다.</p><p class="route-description route-extra">사진을 고른 뒤 분석하기를 누르면 안내판의 글을 읽고, 그 내용과 맞는 유적을 찾습니다. 판독 결과와 연결된 유적을 확인한 다음 상세 설명으로 넘어갑니다.</p></div></article>
+
+        <article class="caption" hidden><div class="flow-chapter"><span>사용 흐름</span><b>03<small> / 04</small></b></div><div class="flow-copy"><h3>설명을 읽고 질문합니다</h3><p class="route-description">문화재의 기본 설명 아래에서 내 문화에 빗댄 설명을 읽습니다. 더 궁금한 내용은 바로 질문할 수 있습니다.</p><p class="route-description route-extra">낯선 용어는 익숙한 문화재에 빗대어 읽고, 사진과 함께 구조나 쓰임을 살펴볼 수 있습니다. 설명을 읽다가 궁금한 부분이 생기면 해당 문화재에 대해 질문을 이어갑니다.</p></div></article>
+
+        <article class="caption" hidden><div class="flow-chapter"><span>사용 흐름</span><b>04<small> / 04</small></b></div><div class="flow-copy"><h3>기록을 다시 꺼내 봅니다</h3><p class="route-description">컬렉션에서 방문한 유적을 찾아 설명을 다시 봅니다. 공유 카드도 이곳에서 확인합니다.</p><p class="route-description route-extra">유적의 이름과 사진을 보고 지난 답사에서 살펴본 장소를 찾습니다. 목록의 항목을 누르면 해당 장소의 설명을 다시 읽을 수 있어, 현장에서 놓친 내용도 나중에 확인할 수 있습니다.</p></div></article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section heritage-index" id="features"><div class="wrap"><div class="feature-intro"><span class="eyebrow">현장에서 쓰는 네 가지</span><h2>찍고, 이해하고, 다녀온 곳을 남깁니다</h2><p class="body">촬영한 안내판에서 유적을 찾고,<br>설명을 확인한 뒤 방문 기록을 남깁니다.</p></div><ol class="heritage-contents">
+<li><a href="#match"><span>01</span><div><h3>사진으로 읽기</h3><p>이름과 한자를 몰라도, 안내판을 찍어 유적을 찾습니다.</p></div></a></li>
+<li><a href="#analogy"><span>02</span><div><h3>익숙한 것에 빗대어 이해</h3><p>내 문화에서 익숙한 대상과 비교해 설명을 듣습니다.</p></div></a></li>
+<li><a href="#lang"><span>03</span><div><h3>내 언어로 둘러보기</h3><p>한국어·영어·일본어·중국어로 화면을 바꿉니다.</p></div></a></li>
+<li><a href="#record"><span>04</span><div><h3>답사 기록 모으기</h3><p>방문한 유적을 모아 보고, 다시 찾아볼 수 있습니다.</p></div></a></li>
+</ol></div></section>
+
+<section class="section match-sec" id="match">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>AI가 읽은 글자를 등록된 유적 하나로 좁힙니다</h2>
+      <p class="body">사진을 넘겨 유적별 판독 예시와 일치도를 확인해 보세요.</p>
+    </div>
+
+    <div class="photo-reel" aria-label="판독할 유적 사진" tabindex="0"><p id="verdict" role="status"></p>
+
+<div class="reel-stage">
+<button type="button" class="heritage-slide" data-photo="0"><img src="img/cheonha/haeinsa.jpg" alt="해인사"></button>
+<button type="button" class="heritage-slide" data-photo="1"><img src="img/cheonha/tongdosa.jpg" alt="통도사"></button>
+<button type="button" class="heritage-slide" data-photo="2"><img src="img/cheonha/songgwangsa.jpg" alt="송광사"></button>
+</div>
+</div><div class="reel-caption"><span id="reelCount">01 / 03</span><p>사진을 좌우로 넘겨 보세요.</p></div>
+<div class="photo-matches"><div class="match-heading"><h3>찾아낸 유적 </h3></div><div id="scores" aria-live="polite"></div></div>
+</div></section>
+
+<section class="section analogy-sec" id="analogy"><div class="wrap"><div class="sec-head"><h2>낯선 석탑을 익숙한 건축에 빗대어</h2></div>
+<div class="analogy-final point-comparison" data-part="roof"><p class="analogy-example">일본인 관람객 예시</p><div class="comparison-monuments"><figure class="comparison-monument korea"><div class="comparison-photo"><div class="photo-free-zoom external-part-zoom korea-zoom" role="img" aria-label="미륵사지 석탑 선택 부분 확대"></div><img src="img/cheonha/mireuksa.jpg" alt="미륵사지 석탑"><button type="button" class="photo-hotspot hotspot-roof" data-photo-part="roof" aria-label="미륵사지 석탑 지붕 확대" aria-pressed="true"><span class="hotspot-dot"></span></button><button type="button" class="photo-hotspot hotspot-pillar" data-photo-part="pillar" aria-label="미륵사지 석탑 기둥 확대" aria-pressed="false"><span class="hotspot-dot"></span></button></div><figcaption><b>미륵사지 석탑</b></figcaption></figure><figure class="comparison-monument japan"><div class="comparison-photo"><div class="photo-free-zoom external-part-zoom japan-zoom" role="img" aria-label="호류지 오층목탑 선택 부분 확대"></div><img src="img/cheonha/horyuji.jpg" alt="호류지 오층목탑"><button type="button" class="photo-hotspot hotspot-roof" data-photo-part="roof" aria-label="호류지 오층목탑 지붕 확대" aria-pressed="true"><span class="hotspot-dot"></span></button><button type="button" class="photo-hotspot hotspot-pillar" data-photo-part="pillar" aria-label="호류지 오층목탑 기둥 확대" aria-pressed="false"><span class="hotspot-dot"></span></button></div><figcaption><b>호류지 오층목탑</b></figcaption></figure></div><div class="comparison-explanation"><h3>익숙한 목탑에서 석탑의 구조를 읽습니다</h3><p>미륵사지 석탑을 처음 보는 일본인 관람객에게는 호류지 오층목탑을 떠올리며 설명합니다. 호류지는 나무로 지은 탑이고 미륵사지 석탑은 돌로 만든 탑이지만, 목조건축의 형태를 기준으로 보면 낯선 석탑의 요소를 이해하기 쉽습니다.</p><h4>층마다 밖으로 뻗은 지붕</h4><p>호류지 목탑에서 층층이 이어지는 지붕선을 먼저 살펴보세요. 미륵사지 석탑에서도 각 층을 덮고 밖으로 뻗은 지붕돌, 즉 옥개석을 볼 수 있습니다. 그 끝부분의 부드러운 곡선에는 목조건물의 지붕을 돌로 옮겨 표현한 특징이 남아 있습니다. 두 사진의 지붕 점을 선택하면 이 부분을 가까이 비교할 수 있습니다.</p><h4>건물을 받치는 기둥과 가로 부재</h4><p>호류지의 아래층에서는 나무 기둥이 건물을 받치는 모습을 볼 수 있습니다. 미륵사지 석탑의 1층에도 기둥 모양으로 세운 돌 부재와 그 위를 가로로 연결하는 형태가 남아 있습니다. 모서리 기둥에는 가운데가 불룩한 배흘림 표현도 있어, 돌로 쌓은 탑 안에서 목조건축의 흔적을 읽을 수 있습니다.</p><p>이 비교는 두 탑의 구조나 모습이 같다는 뜻이 아닙니다. 익숙한 자국 문화재를 출발점으로 삼아, 다른 재료로 만든 유적에서도 지붕과 기둥 같은 건축 요소를 발견하도록 돕는 해설입니다.</p></div></div></div></section>
+
+<section class="section" id="lang"><div class="wrap"><div class="sec-head"><h2>화면 위에서 내 언어로 바꿉니다</h2><p class="body">언어를 선택하면 장소 이름과 안내 문구가 함께 바뀝니다.</p></div>
+<div class="language-sheet"><div class="language-flag-window"><div class="language-switcher" role="group" aria-label="국기로 표시 언어 선택"><button type="button" data-lang="0" data-flag-position="0" aria-pressed="false"><span class="flag-object"><span class="flag-object"><img src="img/cheonha/flag-kr.png" alt="대한민국 국기"></span></span><span>한국어</span></button><button type="button" data-lang="1" data-flag-position="1" aria-pressed="false"><span class="flag-object"><span class="flag-object"><img src="img/cheonha/flag-us.png" alt="미국 국기"></span></span><span>English</span></button><button type="button" data-lang="2" data-flag-position="2" aria-pressed="false"><span class="flag-object"><span class="flag-object"><img src="img/cheonha/flag-jp.png" alt="일본 국기"></span></span><span>日本語</span></button><button type="button" data-lang="3" data-flag-position="3" aria-pressed="false"><span class="flag-object"><span class="flag-object"><img src="img/cheonha/flag-cn.png" alt="중국 국기"></span></span><span>中文</span></button><button type="button" data-lang="0" data-flag-position="4" aria-pressed="false"><span class="flag-object"><span class="flag-object"><img src="img/cheonha/flag-kr.png" alt="대한민국 국기"></span></span><span>한국어</span></button><button type="button" data-lang="1" data-flag-position="5" aria-pressed="false"><span class="flag-object"><span class="flag-object"><img src="img/cheonha/flag-us.png" alt="미국 국기"></span></span><span>English</span></button><button type="button" data-lang="2" data-flag-position="6" aria-pressed="false"><span class="flag-object"><span class="flag-object"><img src="img/cheonha/flag-jp.png" alt="일본 국기"></span></span><span>日本語</span></button><button type="button" data-lang="3" data-flag-position="7" aria-pressed="false"><span class="flag-object"><span class="flag-object"><img src="img/cheonha/flag-cn.png" alt="중국 국기"></span></span><span>中文</span></button><button type="button" data-lang="0" data-flag-position="8" aria-pressed="false"><span class="flag-object"><span class="flag-object"><img src="img/cheonha/flag-kr.png" alt="대한민국 국기"></span></span><span>한국어</span></button><button type="button" data-lang="1" data-flag-position="9" aria-pressed="false"><span class="flag-object"><span class="flag-object"><img src="img/cheonha/flag-us.png" alt="미국 국기"></span></span><span>English</span></button><button type="button" data-lang="2" data-flag-position="10" aria-pressed="false"><span class="flag-object"><span class="flag-object"><img src="img/cheonha/flag-jp.png" alt="일본 국기"></span></span><span>日本語</span></button><button type="button" data-lang="3" data-flag-position="11" aria-pressed="false"><span class="flag-object"><span class="flag-object"><img src="img/cheonha/flag-cn.png" alt="중국 국기"></span></span><span>中文</span></button></div></div><div class="language-editorial"><img src="img/cheonha/gyeongbokgung.jpg" alt="경복궁 광화문"><div class="language-reading" aria-live="polite"><span id="langLocation">서울특별시</span><h3 id="langPlace">경복궁</h3><p id="langSummary">경복궁의 전각과 궁궐의 모습을 살펴보세요. 유적 이름과 안내를 한국어로 확인할 수 있습니다.</p></div></div></div></div></section>
+
+<section class="section" id="record"><div class="wrap"><div class="sec-head"><h2>다녀온 유적을 나만의 컬렉션으로</h2><p class="body">방문한 유적을 목록에서 다시 찾습니다. 항목을 누르면 유적 상세 화면으로 이어집니다.</p></div><div class="visit-browser"><div class="visit-browser-list"><div class="visit-list-heading"><b>방문한 유적</b><span>6곳</span></div><div class="visit-list-items"><button type="button" class="visit-list-row" data-visit="0" aria-pressed="true"><img src="img/cheonha/hwaseong.jpg" alt=""><span><b>수원 화성</b><small>경기도 수원시</small></span><time> 06. 21</time></button><button type="button" class="visit-list-row" data-visit="1" aria-pressed="false"><img src="img/cheonha/changdeokgung.jpg" alt=""><span><b>창덕궁</b><small>서울특별시 종로구</small></span><time> 06. 14</time></button><button type="button" class="visit-list-row" data-visit="2" aria-pressed="false"><img src="img/cheonha/cheonmachong.jpg" alt=""><span><b>천마총</b><small>경상북도 경주시</small></span><time> 06. 07</time></button><button type="button" class="visit-list-row" data-visit="3" aria-pressed="false"><img src="img/cheonha/wolji.jpg" alt=""><span><b>동궁과 월지</b><small>경상북도 경주시</small></span><time> 06. 06</time></button><button type="button" class="visit-list-row" data-visit="4" aria-pressed="false"><img src="img/cheonha/jongmyo.jpg" alt=""><span><b>종묘</b><small>서울특별시 종로구</small></span><time> 05. 30</time></button><button type="button" class="visit-list-row" data-visit="5" aria-pressed="false"><img src="img/cheonha/magoksa.jpg" alt=""><span><b>마곡사</b><small>충청남도 공주시</small></span><time> 05. 23</time></button></div><p class="visit-example-label">방문 기록 예시</p></div><article class="visit-detail" aria-live="polite"><img id="visitHero" src="img/cheonha/hwaseong.jpg" alt="수원 화성"><div class="visit-detail-copy"><span id="visitRegion">경기도 수원시</span><h3 id="visitName">수원 화성</h3><dl><div><dt>방문일</dt><dd id="visitDate">2026. 06. 21</dd></div><div><dt>위치</dt><dd id="visitAddress">경기도 수원시</dd></div></dl><p id="visitStory">수원 화성은 정조 때인 1794년에 공사를 시작해 1796년에 완성한 성곽입니다. 돌과 벽돌을 함께 사용하고 거중기 등 기계를 활용해 축성했습니다. 장안문·팔달문을 비롯한 성문과 여러 방어 시설이 성벽을 따라 이어지며, 도시와 주변 지형을 함께 고려한 조선 후기 성곽의 모습을 보여줍니다.</p></div></article></div></div></section>
+
+<section class="section design-sec" id="design">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>오래된 목재와 돌의 색을 화면에 담았습니다</h2>
+      <p class="body">문화유산의 분위기를 담은 갈색을 주요 버튼과 선택 상태에 사용했습니다. 사진으로 유적을 고르고, 내 언어로 설명을 읽고, 방문 기록을 남기는 흐름에 맞춰 화면을 구성했습니다.</p>
+    </div>
+
+    <ul class="chips" aria-label="색상 팔레트">
+<li class="chip" style="--c:#A0563A"><i></i><div><b>주요 강조색</b><span>#A0563A</span><p class="color-reason">오래된 목재와 흙을 떠올리게 해 유적의 분위기를 담는 갈색</p></div></li>
+<li class="chip" style="--c:#D4A574"><i></i><div><b>보조 강조색</b><span>#D4A574</span><p class="color-reason">석재와 흙의 따뜻한 질감을 더하는 모래색</p></div></li>
+<li class="chip" style="--c:#5C3D2E"><i></i><div><b>본문 글자</b><span>#5C3D2E</span><p class="color-reason">유적 사진과 어우러지면서 긴 해설도 선명하게 읽히는 짙은 갈색</p></div></li>
+<li class="chip" style="--c:#6B8E5A"><i></i><div><b>완료 표시</b><span>#6B8E5A</span><p class="color-reason">유적 주변의 나무와 풀을 닮아 방문 완료를 자연스럽게 표시하는 초록</p></div></li>
+<li class="chip" style="--c:#EAE0D2"><i></i><div><b>구분선</b><span>#EAE0D2</span><p class="color-reason">안내판의 종이빛처럼 정보를 부드럽게 나누는 베이지</p></div></li>
+<li class="chip" style="--c:#FAFAFA"><i></i><div><b>화면 바탕</b><span>#FAFAFA</span><p class="color-reason">유적 사진의 색과 세부 모습을 그대로 드러내는 밝은 바탕</p></div></li>
+</ul>
+
+    <dl class="spec-table design-choices">
+<div><dt>안내문 읽기</dt><dd><p>이름·지정·시대는 위에서 짧게 확인하고, 문화재에 대한 설명은 아래에서 읽게 했습니다. 낯선 용어가 많은 안내문을 한 덩어리로 보여주지 않도록 구성했습니다.</p></dd></div>
+<div><dt>다국어 화면</dt><dd><p>언어를 바꿀 때 이름과 설명의 기준 위치를 유지했습니다. 영문처럼 긴 표기는 별도 줄에 배치해 항목명과 겹치지 않게 했습니다.</p></dd></div>
+<div><dt>정보의 성격</dt><dd><p>안내판에서 읽은 정보, 찾아낸 유적, 자국 문화에 빗댄 설명을 각각 나눴습니다. 원문 정보와 AI가 덧붙인 해설을 혼동하지 않도록 설명의 출처를 표시했습니다.</p></dd></div>
+</dl>
+  </div>
+</section>
+
+
+<section class="section final">
+  <div class="wrap">
+    <img class="seal-big" src="img/cheonha/icon.webp" alt="천하유적 앱 아이콘">
+    <h2>탐색부터 기록까지<br>답사의 시작과 끝을 함께</h2>
+
+  </div>
+</section>
+
+
+<style>.pf-return{padding:28px 0;border-top:1px solid rgba(0,0,0,.08)}.pf-return div{max-width:1120px;margin:0 auto;padding-inline:max(20px,env(safe-area-inset-left,0px));display:flex;justify-content:flex-end}.pf-return a{color:inherit;font-size:14px;font-weight: 600;text-decoration:none;padding:10px 0}</style>
+<footer class="pf-return"><div><a href="#top">처음으로 ↑</a></div></footer>
+
+<script>
+(function () {
+  "use strict";
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+
+  var closing=document.querySelector('.final');
+  if(closing&&!reduce){
+    closing.classList.add('closing-ready');
+    new IntersectionObserver(function(es){es.forEach(function(e){closing.classList.toggle('closing-visible',e.isIntersecting);});},{rootMargin:'0px 0px -'+Math.round(innerHeight*.2)+'px 0px',threshold:0}).observe(closing);
+  }
+
+  /* 내비게이션 그림자 */
+  var nav = document.getElementById("nav");
+  var onScroll = function () { nav.classList.toggle("scrolled", window.scrollY > 8); };
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  /* 본문 순서와 목차 순서를 일치시키고, 마지막으로 지난 구간을 표시한다. */
+  var navGroups = {
+    concept:"concept", route:"route", features:"features", match:"features",
+    analogy:"features", lang:"features", record:"features", design:"design"
+  };
+  var navAnchors = Array.from(document.querySelectorAll(".nav-links a"));
+  var navSections = Array.from(document.querySelectorAll("section[id]")).filter(function(section){return navGroups[section.id];});
+  var navPending = false;
+  function updateSectionNav() {
+    navPending = false;
+    var active = "";
+    navSections.forEach(function (section) {
+      if (navGroups[section.id] && section.getBoundingClientRect().top <= Math.max(110,innerHeight*.35)) active=navGroups[section.id];
+    });
+    navAnchors.forEach(function (anchor) {
+      var on=anchor.getAttribute("href")==="#"+active;
+      anchor.classList.toggle("on",on);
+      if(on) anchor.setAttribute("aria-current","location"); else anchor.removeAttribute("aria-current");
+    });
+  }
+  addEventListener("scroll",function(){if(!navPending){navPending=true;requestAnimationFrame(updateSectionNav);}},{passive:true});
+  addEventListener("resize",updateSectionNav); updateSectionNav();
+
+
+  function autoCycle(root, next, delay) {
+    if (!root || reduce) return;
+    var timer=null, firstTimer=null, inside=false, resumeAt=0;
+    function stop(){clearInterval(timer);clearTimeout(firstTimer);timer=null;}
+    root.addEventListener("pointerdown",function(){resumeAt=Date.now()+8000;});
+    root.addEventListener("keydown",function(){resumeAt=Date.now()+8000;});
+    new IntersectionObserver(function(entries){
+      inside=entries[0].isIntersecting;stop();
+      if(inside){
+        if(root.id==='lang')firstTimer=setTimeout(function(){if(Date.now()>=resumeAt&&!document.hidden)next();timer=setInterval(function(){if(Date.now()>=resumeAt&&!document.hidden)next();},delay);},1200);
+        else timer=setInterval(function(){if(Date.now()>=resumeAt&&!document.hidden)next();},delay);
+      }
+    },{rootMargin:"0px 0px -"+Math.round(innerHeight*(root.id==='lang'?.2:.4))+"px 0px",threshold:0}).observe(root);
+    addEventListener("pagehide",stop);
+  }
+
+  /* 문제 정의: 같은 안내판을 세 가지 방식으로 다시 쓴다 */
+  var PLATES = [
+  {
+    "stamp": "寶",
+    "kicker": "보물 제61호",
+    "head": "佛國寺 大雄殿 앞 石燈",
+    "rows": [
+      [
+        "指定",
+        "寶物 第61號"
+      ],
+      [
+        "時代",
+        "統一新羅"
+      ],
+      [
+        "所在地",
+        "慶尙北道 慶州市 進峴洞"
+      ]
+    ],
+    "note": "八角 石燈으로 下臺石에 伏蓮, 上臺石에 仰蓮을 새겼으며 統一新羅 石燈의 典型을 보여준다.",
+    "app": false,
+    "who": "읽는 사람 · 일본인 관광객",
+    "title": "한자만으로는 안내문을 이해하기 어렵다",
+    "body": "일본인 관광객은 안내판의 한자를 보고 유적 이름이나 일부 단어를 짐작할 수 있습니다. 하지만 한국어 문장 속에 한자와 전문 용어가 섞여 있어, 안내판 전체를 스스로 읽기는 어렵습니다.\n\n복련·앙련이라는 이름을 알아보더라도 석등의 어느 부분을 뜻하는지 바로 연결되지 않습니다. 통일신라라는 시대와 문화재 지정의 의미도 별도로 찾아봐야 합니다.\n\n유적 앞에 도착했어도 설명을 이해하려면 검색과 번역을 반복해야 하고, 정작 눈앞의 문화재를 살펴볼 시간은 줄어듭니다.",
+    "gap": "",
+    "ok": false
+  },
+  {
+    "stamp": "JA",
+    "kicker": "宝物 第61号",
+    "head": "仏国寺 大雄殿前の石灯籠",
+    "rows": [
+      [
+        "指定",
+        "宝物 第61号"
+      ],
+      [
+        "時代",
+        "統一新羅"
+      ],
+      [
+        "所在地",
+        "慶州市 進峴洞"
+      ]
+    ],
+    "note": "八角形の石灯籠で、下台石に伏蓮、上台石に仰蓮を刻み、統一新羅時代の石灯籠の典型を示しています。",
+    "app": false,
+    "who": "읽는 사람 · 일본인 관광객",
+    "title": "일본어로 옮겨도 낯선 용어는 남는다",
+    "body": "기계 번역을 거치면 안내문을 일본어로 읽을 수 있습니다. 유적의 이름과 위치, 시대처럼 기본적인 정보를 확인하는 데 도움이 됩니다.\n\n하지만 복련·앙련 같은 용어는 번역된 문장에도 그대로 남습니다. 뜻을 찾아보지 않으면 꽃잎의 방향이나 받침돌의 장식처럼 실제로 관찰할 부분을 알아채기 어렵습니다.\n\n문장의 언어는 달라졌지만 한국 문화유산에 익숙하지 않은 관광객을 위한 배경 설명은 부족합니다. 번역문을 읽는 것에서 유적을 이해하는 것까지는 여전히 거리가 있습니다.",
+    "gap": "",
+    "ok": false
+  },
+  {
+    "stamp": "icon",
+    "kicker": "宝物 第61号",
+    "head": "仏国寺 大雄殿前の石灯籠",
+    "rows": [
+      [
+        "指定",
+        "韓国の指定文化財・宝物 第61号"
+      ],
+      [
+        "時代",
+        "8世紀・統一新羅時代"
+      ],
+      [
+        "距離",
+        "現在地から1.2km"
+      ]
+    ],
+    "note": "日本のお寺で見かける石灯籠のように、仏堂の前を照らすための灯りです。灯りを入れる部分を支える石には、下向きと上向きの蓮の花びらが彫られています。二つの向きの花びらを見比べてみてください。",
+    "app": true,
+    "who": "읽는 사람 · 일본인 관광객",
+    "title": "익숙한 문화에 빗대어 일본어로 설명한다",
+    "body": "천하유적은 일본어로 안내문을 옮기는 데서 그치지 않고, 일본 사찰에서 볼 수 있는 석등을 비교 대상으로 삼아 쓰임을 설명합니다. 관광객이 이미 알고 있는 모습에서 출발해 낯선 유적을 이해하도록 돕습니다.\n\n복련·앙련은 아래와 위를 향한 연꽃잎으로 풀어 설명합니다. 용어를 외우기보다 사진과 실제 석등에서 꽃잎의 방향을 찾아보며 특징을 확인할 수 있습니다.\n\n이름과 지정 정보, 시대, 현재 위치에서의 거리도 일본어로 함께 보여줍니다. 안내판을 읽은 뒤 다시 검색하기보다, 한 화면에서 기본 정보를 확인하고 눈앞의 유적을 살펴보도록 구성했습니다.",
+    "gap": "",
+    "ok": true
+  }
+];
+  var plate = document.getElementById("plate");
+  var tabs = [].slice.call(document.querySelectorAll(".sign-switch button"));
+  var pStamp = document.getElementById("pStamp"), pKicker = document.getElementById("pKicker");
+  var pHead = document.getElementById("pHead"), pRows = document.getElementById("pRows"), pNote = document.getElementById("pNote");
+  var rWho = document.getElementById("rWho"), rTitle = document.getElementById("rTitle");
+  var rBody = document.getElementById("rBody"), rGap = document.getElementById("rGap"), rGapText = document.getElementById("rGapText");
+
+  function paintPlate(i) {
+    var d = PLATES[i];
+    document.querySelector(".sign-stage").classList.toggle("translated-stage", i > 0);
+    pStamp.classList.toggle("app-mark", i === 2);
+    if (i === 2) {
+      pStamp.innerHTML = '<img src="img/cheonha/icon.webp" alt="천하유적">';
+    } else {
+      pStamp.textContent = i === 0 ? "원문" : "번역";
+    }
+    pStamp.setAttribute("aria-hidden","true");
+    pKicker.textContent = d.kicker;
+    pHead.textContent = d.head;
+    document.getElementById("plateExample").hidden = i === 0;
+    function koreanLine(parent, text) {
+      var line = document.createElement("span");
+      line.className = "plate-ko"; line.lang = "ko"; line.textContent = text;
+      parent.appendChild(line);
+    }
+    if (i > 0) {
+      koreanLine(pKicker, "보물 제61호");
+      koreanLine(pHead, "불국사 대웅전 앞 석등");
+    }
+    pRows.innerHTML = "";
+    d.rows.forEach(function (r, rowIndex) {
+      var row = document.createElement("div");
+      var dt = document.createElement("dt"); dt.textContent = r[0];
+      var dd = document.createElement("dd"); dd.textContent = r[1];
+      if (i > 0) {
+        var koRows = i === 1 ? ["지정 : 보물 제61호", "시대 : 통일신라", "위치 : 경주시 진현동"] : ["지정 : 한국의 지정문화재 · 보물 제61호", "시대 : 8세기 · 통일신라", "거리 : 현재 위치에서 1.2km"];
+        koreanLine(dd, koRows[rowIndex]);
+      }
+      row.appendChild(dt); row.appendChild(dd); pRows.appendChild(row);
+    });
+    pNote.textContent = d.note;
+    if (i > 0) {
+      pNote.textContent = "";
+      var jaLines = i === 1 ? ["八角形の石灯籠で、下台石に伏蓮、上台石に仰蓮を刻み、", "統一新羅時代の石灯籠の典型を示しています。"] : ["日本のお寺で見かける石灯籠のように、仏堂の前を照らすための灯りです。", "灯りを入れる部分を支える石には、下向きと上向きの蓮の花びらが彫られています。", "二つの向きの花びらを見比べてみてください。"];
+      var koLines = i === 1 ? ["팔각형 석등으로, 하대석에 복련을, 상대석에 앙련을 새겨", "통일신라 시대 석등의 전형을 보여줍니다."] : ["일본 사찰에서 볼 수 있는 석등처럼, 법당 앞을 밝히던 등입니다.", "불을 밝히는 부분을 받치는 돌에는 아래와 위를 향한 연꽃잎이 새겨져 있습니다.", "서로 다른 방향의 꽃잎을 비교해 보세요."];
+      jaLines.forEach(function(text, index) {
+        var pair = document.createElement("span"); pair.className = "plate-translation-pair";
+        var ja = document.createElement("span"); ja.lang = "ja"; ja.textContent = text;
+        pair.appendChild(ja); koreanLine(pair, koLines[index]); pNote.appendChild(pair);
+      });
+    }
+    plate.lang = i === 0 ? "ko" : "ja";
+    plate.classList.toggle("app", d.app);
+    plate.setAttribute("aria-labelledby", "tab" + i);
+    if (rWho) rWho.textContent = d.who;
+    rTitle.textContent = d.title;
+    rBody.textContent = d.body;
+    rGapText.textContent = d.gap;
+    rGap.classList.toggle("ok", d.ok);
+    tabs.forEach(function (t, k) { t.setAttribute("aria-selected", k === i ? "true" : "false"); });
+    if (!reduce) {
+      plate.classList.remove("plate-fade");
+      void plate.offsetWidth;
+      plate.classList.add("plate-fade");
+    }
+  }
+  tabs.forEach(function (t, i) { t.addEventListener("click", function () { paintPlate(i); }); });
+  paintPlate(0);
+  autoCycle(document.getElementById("concept"),function(){
+    var active=tabs.findIndex(function(t){return t.getAttribute("aria-selected")==="true";});
+    paintPlate((active+1)%tabs.length);
+  },4800);
+
+  /* 답사 동선: 정류장을 누르면 진열장의 화면과 전시 라벨이 함께 바뀐다 */
+  var route = document.getElementById("routeLine");
+  var stops = [].slice.call(document.querySelectorAll(".stop"));
+  var screens = [].slice.call(document.querySelectorAll("#screens .scr"));
+  var caps = [].slice.call(document.querySelectorAll(".caption"));
+  var exhibit = document.getElementById("exhibit");
+  var current = 0;
+  function showStop(i, focus) {
+    current = i;
+    stops.forEach(function (s, k) {
+      var on = k === i;
+      s.setAttribute("aria-selected", on ? "true" : "false");
+      s.tabIndex = on ? 0 : -1;
+      s.classList.toggle("passed", k < i);
+    });
+    screens.forEach(function (s, k) { s.classList.toggle("on", k === i); s.style.setProperty("--screen-x", ((k-i)*100)+"%"); s.setAttribute("aria-hidden", k===i?"false":"true"); });
+    caps.forEach(function (c, k) {
+      c.hidden = k !== i;
+      if (k === i && !reduce) { c.classList.remove("fade"); void c.offsetWidth; c.classList.add("fade"); }
+    });
+    route.style.setProperty("--p", (i / (stops.length - 1)).toFixed(3));
+    exhibit.setAttribute("aria-labelledby", "stop" + i);
+    if (focus) stops[i].focus();
+  }
+  stops.forEach(function (s, i) {
+    s.addEventListener("click", function () { showStop(i); });
+    s.addEventListener("keydown", function (e) {
+      var n = stops.length, to = null;
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") to = (current + 1) % n;
+      else if (e.key === "ArrowLeft" || e.key === "ArrowUp") to = (current - 1 + n) % n;
+      else if (e.key === "Home") to = 0;
+      else if (e.key === "End") to = n - 1;
+      if (to !== null) { e.preventDefault(); showStop(to, true); }
+    });
+  });
+  [].slice.call(document.querySelectorAll(".cap-next")).forEach(function (b) {
+    b.addEventListener("click", function () { showStop(+b.getAttribute("data-go"), true); });
+  });
+  showStop(0);
+  var touch=document.querySelector('.demo-touch'), routeTimers=[], routeVisible=false;
+  var tapTargets=['[data-scr="0"] .scr-nav>div:nth-child(3)','[data-scr="1"] .analyze','[data-scr="2"] .scr-nav>div:last-child','[data-scr="3"] .scr-nav>div:first-child'];
+  function clearRouteTimers(){routeTimers.forEach(clearTimeout);routeTimers=[];touch.classList.remove('tap');}
+  function routeWait(fn,ms){routeTimers.push(setTimeout(fn,ms));}
+  function playRoute(){
+    clearRouteTimers(); if(!routeVisible||reduce)return;
+    var progress=document.querySelector('.route-fill');if(progress){progress.style.transition='none';progress.style.width=(75*current/3)+'%';requestAnimationFrame(function(){requestAnimationFrame(function(){progress.style.transition='width 4.45s linear';progress.style.width=(75*Math.min(current+1,3)/3)+'%';});});}
+    routeWait(function(){
+      var target=document.querySelector(tapTargets[current]);
+      if(target){var a=target.getBoundingClientRect(),b=document.getElementById('screens').getBoundingClientRect();touch.style.left=(a.left-b.left+a.width/2)+'px';touch.style.top=(a.top-b.top+a.height/2)+'px';touch.classList.add('tap');}
+      routeWait(function(){touch.classList.remove('tap');showStop((current+1)%screens.length);playRoute();},850);
+    },3600);
+  }
+  new IntersectionObserver(function(es){es.forEach(function(e){routeVisible=e.isIntersecting;if(routeVisible)playRoute();else clearRouteTimers();});},{rootMargin:'0px 0px -'+Math.round(innerHeight*.4)+'px 0px',threshold:0}).observe(exhibit);
+  tapTargets.forEach(function(sel,i){var el=document.querySelector(sel);if(el){el.style.cursor='pointer';el.addEventListener('click',function(){clearRouteTimers();showStop((i+1)%screens.length);playRoute();});}});
+
+
+  var photoExamples=[{name:'해인사',aliases:['Haeinsa'],text:'합천 해인사'}, {name:'통도사',aliases:['Tongdosa'],text:'양산 통도사'}, {name:'송광사',aliases:['Songgwangsa'],text:'순천 송광사'}], photoIndex=0;
+  function normalize(s){return s.replace(/\s+/g,' ').toLowerCase().trim();}
+  function actualTextScore(query,entry){
+    if(!query)return 0;var q=normalize(query),candidates=[entry.name].concat(entry.aliases||[]).map(normalize);
+    for(var c of candidates){if(q.includes(c))return 1;}
+    var qt=new Set(q.split(/\W+/).filter(Boolean)),et=new Set(candidates.join(' ').split(/\W+/).filter(Boolean));
+    var intersection=Array.from(qt).filter(function(t){return et.has(t);}).length;
+    return intersection/(new Set(Array.from(qt).concat(Array.from(et))).size||1);
+  }
+  function selectPhoto(i){
+    photoIndex=(i+photoExamples.length)%photoExamples.length;
+    document.querySelectorAll('.heritage-slide').forEach(function(slide,k){var d=(k-photoIndex+3)%3;if(d===2)d=-1;slide.dataset.position=d;slide.setAttribute('aria-current',d===0?'true':'false');});
+    var example=photoExamples[photoIndex],rows=photoExamples.map(function(e){return {name:e.name,score:[[.94,.58,.32],[.41,.91,.26],[.35,.49,.96]][photoIndex][photoExamples.indexOf(e)]};}).sort(function(a,b){return b.score-a.score;}).slice(0,3);
+    document.getElementById('reelCount').textContent=String(photoIndex+1).padStart(2,'0')+' / 03';
+    var results=document.getElementById('scores');results.innerHTML='';
+    rows.forEach(function(r,k){var row=document.createElement('div');row.className='photo-match-row';var rank=document.createElement('span');rank.className='match-rank';rank.textContent=String(k+1).padStart(2,'0');var name=document.createElement('b');name.textContent=r.name;var value=document.createElement('strong');value.textContent=Math.round(r.score*100)+'%';var bar=document.createElement('span');bar.className='photo-score-bar';var fill=document.createElement('i');fill.style.width=(r.score*100)+'%';bar.appendChild(fill);row.append(rank,name,value,bar);results.appendChild(row);});
+    document.getElementById('verdict').textContent='선택한 사진의 후보 3곳입니다.';
+  }
+  document.querySelectorAll('.heritage-slide').forEach(function(b){b.addEventListener('click',function(){selectPhoto(Number(b.dataset.photo));});});
+  autoCycle(document.getElementById('match'),function(){selectPhoto(photoIndex+1);},4000);
+  var lastWheel=0;document.querySelector('.photo-reel').addEventListener('wheel',function(e){if(Math.abs(e.deltaX)>Math.abs(e.deltaY)){e.preventDefault();if(Date.now()-lastWheel>650){lastWheel=Date.now();selectPhoto(photoIndex+(e.deltaX>0?1:-1));}}},{passive:false});
+  document.querySelector('.photo-reel').addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();selectPhoto(photoIndex+(e.key==='ArrowRight'?1:-1));}});
+  selectPhoto(0);
+
+  var translations=[
+    ["천하유적","서울특별시","유적지 또는 문화재를 검색하세요","내 주변의 문화유산","경복궁","눈앞의 유적, 이야기로 만나보세요.","현재 위치에서 1.2km","자세히 보기 →"],
+    ["Cheonha Heritage","Seoul","Search places or heritage","Heritage near you","Gyeongbokgung Palace","Discover the story in front of you.","1.2 km from you","Explore →"],
+    ["天下遺跡","ソウル","遺跡・文化財を検索","近くの文化遺産","景福宮","目の前の遺跡の物語に出会う。","現在地から1.2km","詳しく見る →"],
+    ["天下遗迹","首尔","搜索遗址或文化遗产","附近的文化遗产","景福宫","了解眼前遗迹背后的故事。","距当前位置1.2公里","查看详情 →"]
+  ];
+  var languageFields=["langAppTitle","langLocation","langSearch","langNearby","langPlace","langSummary","langDistance","langAction"];
+  var languageButtons=Array.from(document.querySelectorAll("[data-lang]")), languageIndex=0;
+  var flagRail=document.querySelector('.language-switcher'),flagMoving=false,flagCursor=4,flagFrame=0,flagDebounce=0;
+  var longLanguageText=["경복궁의 전각과 궁궐의 모습을 살펴보세요. 건물마다 다른 이름과 쓰임을 한국어로 읽으며, 지금 보고 있는 장소가 어떤 곳인지 차근차근 알아볼 수 있습니다. 유적의 이름만 확인하는 데서 끝나지 않고, 건축물과 주변 공간을 함께 보며 설명을 따라가 보세요. 현장에서 익숙하지 않은 이름이나 표현을 만나더라도 내가 편하게 읽는 언어로 내용을 이해할 수 있도록 구성했습니다.", "Explore the halls and courtyards of Gyeongbokgung Palace. Read the names and purposes of each space in English as you look around. The guide connects unfamiliar terms with the buildings in front of you, helping you understand the palace without switching to a translation tool. Spend less time searching and more time discovering its history.", "景福宮の建物や庭を、自分のペースで巡ってみましょう。建物の名前や空間の役割を日本語で確認しながら、目の前の景色と説明を見比べられます。難しい言葉はわかりやすく説明するので、翻訳のために立ち止まる必要はありません。歴史を知り、建物の細部にも目を向けてみてください。", "按照自己的节奏，探索景福宫的宫殿与庭院。您可以用中文了解建筑名称和各个空间的用途，将说明与眼前的景色联系起来。遇到陌生的名称或表达时，无需反复切换翻译工具，也能继续阅读。少一些查找与等待，多一些对建筑细节的观察，在游览中慢慢了解这座宫殿的历史。"];
+  function flagLeft(n){var b=languageButtons[n];return b.offsetLeft-flagRail.clientWidth*.625+b.offsetWidth/2;}
+  function centerFlag(n,animate){
+    cancelAnimationFrame(flagFrame);renderLanguage(Number(languageButtons[n].dataset.lang));flagMoving=true;flagCursor=n;var start=flagRail.scrollLeft,target=flagLeft(n),began=performance.now(),duration=animate&&!reduce?1050:0;
+    function step(now){var p=duration?Math.min((now-began)/duration,1):1;var eased=p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;flagRail.scrollLeft=start+(target-start)*eased;
+      if(p<1){flagFrame=requestAnimationFrame(step);}else{if(flagCursor>=8)flagCursor-=4;else if(flagCursor<4)flagCursor+=4;flagRail.scrollLeft=flagLeft(flagCursor);renderLanguage(Number(languageButtons[flagCursor].dataset.lang));requestAnimationFrame(function(){flagMoving=false;});}}
+    flagFrame=requestAnimationFrame(step);
+  }
+  function renderLanguage(i){languageIndex=i;document.querySelector(".language-reading").lang=["ko","en","ja","zh-CN"][i];languageFields.forEach(function(id,k){var el=document.getElementById(id);if(el)el.textContent=translations[i][k];});document.getElementById('langSummary').textContent=longLanguageText[i];languageButtons.forEach(function(b){b.setAttribute('aria-pressed',String(Number(b.dataset.lang)===i));});}
+  function setLanguage(i,position,animate){if(position===false){renderLanguage(i);return;}centerFlag(typeof position==='number'?position:4+i,animate!==false);}
+  languageButtons.forEach(function(b){b.addEventListener('click',function(){setLanguage(Number(b.dataset.lang),Number(b.dataset.flagPosition),true);});});
+  flagRail.addEventListener('scroll',function(){if(flagMoving)return;clearTimeout(flagDebounce);flagDebounce=setTimeout(function(){var mid=flagRail.scrollLeft+flagRail.clientWidth/2,best=0,dist=Infinity;languageButtons.forEach(function(b,i){var d=Math.abs(b.offsetLeft+b.offsetWidth/2-mid);if(d<dist){dist=d;best=i;}});setLanguage(Number(languageButtons[best].dataset.lang),best,true);},180);},{passive:true});
+  var flagsInitialized=false;
+  function initializeFlags(){if(flagsInitialized)return;flagsInitialized=true;setLanguage(0,4,false);requestAnimationFrame(function(){flagRail.classList.add('flags-ready');});autoCycle(document.getElementById('lang'),function(){setLanguage((languageIndex+1)%4,flagCursor+1,true);},4600);}
+  if(document.readyState==='complete'){initializeFlags();}else{window.addEventListener('load',initializeFlags,{once:true});}
+  var flagRailWidth=0;new ResizeObserver(function(){var width=flagRail.clientWidth;if(width!==flagRailWidth){flagRailWidth=width;if(flagsInitialized)centerFlag(flagCursor,false);}}).observe(flagRail);
+
+  var collectionExamples=[["수원 화성", "경기도 수원시", "hwaseong", "2026. 06. 21", "수원 화성은 정조 때인 1794년에 공사를 시작해 1796년에 완성한 성곽입니다. 돌과 벽돌을 함께 사용하고 거중기 등 기계를 활용해 축성했습니다. 장안문·팔달문을 비롯한 성문과 여러 방어 시설이 성벽을 따라 이어지며, 도시와 주변 지형을 함께 고려한 조선 후기 성곽의 모습을 보여줍니다."], ["창덕궁", "서울특별시 종로구", "changdeokgung", "2026. 06. 14", "창덕궁은 1405년 태종 때 세운 조선의 궁궐입니다. 왕이 정사를 돌보던 인정전·선정전, 왕실의 생활공간인 희정당·대조전, 휴식 공간인 후원으로 구성됩니다. 주변 지형을 살린 건물 배치와 정원은 자연과 어우러지는 궁궐의 특징을 잘 보여줍니다."], ["천마총", "경상북도 경주시", "cheonmachong", "2026. 06. 07", "천마총은 경주 대릉원에 있는 신라의 돌무지덧널무덤입니다. 나무 덧널 둘레와 위에 돌을 쌓고 흙으로 덮어 봉분을 만들었습니다. 발굴 과정에서 자작나무 껍질에 그림을 그린 말다래인 천마도가 출토되어 천마총이라는 이름이 붙었습니다."], ["동궁과 월지", "경상북도 경주시", "wolji", "2026. 06. 06", "동궁과 월지는 신라 왕궁의 별궁과 연못이 있던 유적입니다. 문무왕 때 조성된 월지는 바다처럼 보이도록 꾸민 연못으로, 주변 전각과 함께 왕실의 연회 공간으로 사용되었습니다. 물가를 따라 건물과 연못의 배치를 살펴보며 신라 궁궐 정원의 모습을 이해할 수 있습니다."], ["종묘", "서울특별시 종로구", "jongmyo", "2026. 05. 30", "종묘는 조선과 대한제국 역대 왕과 왕비, 황제와 황후의 신주를 모시고 제사를 지내는 국가 사당입니다. 정전과 영녕전이 주요 제례 공간을 이루며, 길게 이어지는 건물과 넓은 마당이 엄숙한 분위기를 만듭니다. 왕실의 제례 전통과 건축을 함께 살펴볼 수 있는 유산입니다."], ["마곡사", "충청남도 공주시", "magoksa", "2026. 05. 23", "마곡사는 공주 태화산에 자리한 사찰입니다. 경내에는 대광보전·대웅보전·영산전 등의 전각과 오층석탑이 남아 있습니다. 산과 계곡에 둘러싸인 사찰의 배치를 따라 걸으며 전각과 불교 건축을 살펴볼 수 있습니다. 2018년 산사, 한국의 산지 승원의 한 곳으로 유네스코 세계유산에 등재되었습니다."]];
+  var visitAutoIndex=0;
+  document.querySelectorAll('.visit-list-row').forEach(function(b){b.addEventListener('click',function(){visitAutoIndex=Number(b.dataset.visit);var d=collectionExamples[visitAutoIndex];document.querySelectorAll('.visit-list-row').forEach(function(x){x.setAttribute('aria-pressed',String(x===b));});document.getElementById('visitHero').src='img/cheonha/'+d[2]+'.jpg';document.getElementById('visitHero').alt=d[0];document.getElementById('visitName').textContent=d[0];document.getElementById('visitRegion').textContent=d[1];document.getElementById('visitAddress').textContent=d[1];document.getElementById('visitDate').textContent=d[3];document.getElementById('visitStory').textContent=d[4];});});
+
+  autoCycle(document.querySelector('.visit-browser'),function(){visitAutoIndex=(visitAutoIndex+1)%collectionExamples.length;document.querySelectorAll('.visit-list-row')[visitAutoIndex].click();},4500);
+
+  function positionComparisonPoints(){document.querySelectorAll('.comparison-monument').forEach(function(figure){var img=figure.querySelector('.comparison-photo>img');if(!img.naturalWidth)return;var frame=figure.querySelector('.comparison-photo'),korea=figure.classList.contains('korea'),w=frame.clientWidth,h=frame.clientHeight,scale=(korea?Math.max:Math.min)(w/img.naturalWidth,h/img.naturalHeight),ox=(w-img.naturalWidth*scale)*(korea?.73:.5),oy=(h-img.naturalHeight*scale)*.5,points=korea?{roof:[.757,.749],pillar:[.696,.861]}:{roof:[.78,.58],pillar:[.68,.80]};Object.keys(points).forEach(function(key){var point=figure.querySelector('.hotspot-'+key);point.style.left=(points[key][0]*img.naturalWidth*scale+ox)+'px';point.style.top=(points[key][1]*img.naturalHeight*scale+oy)+'px';});var active=figure.querySelector('.hotspot-'+(document.querySelector('.point-comparison').dataset.part||'roof')),zoom=figure.querySelector('.photo-free-zoom'),zx=parseFloat(active.style.left),zy=parseFloat(active.style.top),zw=zoom.offsetWidth,zh=zoom.offsetHeight;zoom.style.left=Math.max(8,Math.min(w-zw-8,korea?zx-zw-80:zx+40))+'px';zoom.style.top=Math.max(8,Math.min(h-zh-8,zy-zh/2))+'px';});}
+  document.querySelectorAll('.comparison-photo>img').forEach(function(img){img.addEventListener('load',positionComparisonPoints);});new ResizeObserver(positionComparisonPoints).observe(document.querySelector('.comparison-monuments'));positionComparisonPoints();
+  var comparisonCopy={"roof": ["목탑의 지붕을 돌로 표현했습니다", "호류지 오층목탑에서는 층마다 밖으로 넓게 뻗은 지붕을 볼 수 있습니다. 일본인 관람객에게는 먼저 이 익숙한 목탑의 지붕선을 떠올리게 한 뒤, 미륵사지 석탑에서 같은 역할을 하는 지붕돌을 찾아보도록 설명합니다.", "미륵사지 석탑의 지붕돌을 뜻하는 옥개석은 목조건물의 지붕처럼 부드러운 곡선을 담고 있습니다. 확대 사진에서는 아래층보다 작아지는 지붕의 크기와 바깥으로 뻗은 끝부분을 차례로 살펴보세요. 단순히 돌을 층층이 쌓은 모양이 아니라, 목조건축의 형태를 돌로 옮긴 모습을 읽을 수 있습니다.", "이 비교는 두 탑이 똑같다는 뜻이 아닙니다. 나무로 지은 호류지의 목탑을 출발점으로 삼아, 다른 재료인 돌에서도 기둥과 지붕의 형태를 찾아보도록 돕는 설명입니다."], "pillar": ["돌기둥에도 목조건축의 흔적이 남아 있습니다", "호류지 오층목탑의 아래층에서 지붕을 받치는 나무 기둥을 먼저 살펴보세요. 그다음 미륵사지 석탑의 1층으로 시선을 옮기면, 출입 공간 둘레에 건물의 기둥처럼 세운 돌 부재를 확인할 수 있습니다.", "미륵사지 석탑의 1층 모서리 기둥에는 가운데가 불룩한 배흘림 표현이 있고, 기둥 위에도 목조건축에서 기둥들을 연결하는 부재의 형태가 남아 있습니다. 확대 사진에서는 기둥의 몸체와 그 위를 가로로 잇는 부분을 함께 살펴보세요.", "나무와 돌은 재료도 다르고 건물을 만드는 방법도 다릅니다. 여기서는 두 탑의 구조가 같다고 단정하기보다, 익숙한 나무 기둥을 기준으로 석탑 속 건축 요소를 발견하도록 설명합니다."]};
+  function selectComparisonPart(part){var label=part==='roof'?'지붕':'기둥';document.querySelector('.point-comparison').dataset.part=part;document.querySelectorAll('[data-photo-part]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.photoPart===part));});document.querySelectorAll('.active-comparison-part').forEach(function(e){e.textContent=label;});document.querySelectorAll('.external-part-zoom').forEach(function(e){e.setAttribute('aria-label',(e.classList.contains('korea-zoom')?'미륵사지 석탑 ':'호류지 오층목탑 ')+label+' 확대');});positionComparisonPoints();}
+  var comparisonTimer=null,comparisonInView=false;
+  function queueComparison(first){clearTimeout(comparisonTimer);if(!comparisonInView||reduce)return;comparisonTimer=setTimeout(function(){selectComparisonPart(document.querySelector('.point-comparison').dataset.part==='roof'?'pillar':'roof');queueComparison();},first?1200:3800);}
+  document.querySelectorAll('[data-photo-part]').forEach(function(b){b.addEventListener('click',function(){selectComparisonPart(b.dataset.photoPart);queueComparison();});});selectComparisonPart('roof');
+  new IntersectionObserver(function(es){comparisonInView=es[0].isIntersecting;queueComparison(true);},{rootMargin:'0px 0px -'+Math.round(innerHeight*.2)+'px 0px',threshold:0}).observe(document.querySelector('.comparison-monuments'));
+
+
+})();
+</script>
+<style>.pf-back{display:inline-grid;place-items:center;flex:none;width:34px;height:34px;margin-right:4px;border-radius:50%;background:transparent;color:#191f28;font: 600 20px/1 system-ui,sans-serif;text-decoration:none;transition:background .2s ease,transform .2s ease}.pf-back:hover{background:rgba(25,31,40,.07);transform:translateX(-2px)}.pf-back:focus-visible{outline:2px solid #191f28;outline-offset:2px}</style>
+<style>.pf-back,.pf-back:hover{width:32px;height:32px;margin-right:8px;background:#191f28!important;color:#fff!important;font-size:16px}.pf-back:hover{background:#000!important}</style>
+<style>.pf-back{margin-right:-14px!important}</style>
+<style>
+/* 뒤로가기: 검정 동그라미 안 화살표, 마우스를 올리면 버튼 안에 '돌아가기'가 펼쳐진다 */
+.pf-back{display:inline-flex!important;align-items:center;justify-content:flex-start;gap:0;width:auto!important;min-width:32px;height:32px!important;padding:0 9px!important;
+  border-radius:999px!important;background:#191f28!important;color:#fff!important;font:600 13px/1 system-ui,'Pretendard','Noto Sans KR',sans-serif!important;
+  letter-spacing:-.01em;white-space:nowrap;overflow:hidden;transform:none!important;transition:gap .25s ease,padding .25s ease,background .2s ease!important}
+.pf-back .pf-arrow{font-size:15px;line-height:1;flex:none}
+.pf-back .pf-label{max-width:0;opacity:0;transition:max-width .3s ease,opacity .2s ease}
+.pf-back:hover,.pf-back:focus-visible{gap:6px;padding:0 13px 0 10px!important;background:#000!important}
+.pf-back:hover .pf-label,.pf-back:focus-visible .pf-label{max-width:5em;opacity:1}
+</style>
+<style>
+/* 평소엔 32px 검정 동그라미, 마우스를 올리면 오른쪽으로 늘어나 알약 모양이 되며 '돌아가기'가 보인다 */
+.pf-back{box-sizing:border-box!important;justify-content:flex-start!important;width:32px!important;min-width:0!important;max-width:32px;padding:0 0 0 9px!important;gap:6px!important;
+  transition:max-width .32s cubic-bezier(.2,.8,.2,1),width .32s cubic-bezier(.2,.8,.2,1),background .2s ease!important}
+.pf-back .pf-arrow{width:14px;text-align:center}
+.pf-back .pf-label{max-width:none!important;opacity:0;transition:opacity .18s ease!important}
+.pf-back:hover,.pf-back:focus-visible{width:96px!important;max-width:96px;padding:0 0 0 9px!important;gap:6px!important}
+.pf-back:hover .pf-label,.pf-back:focus-visible .pf-label{opacity:1;transition:opacity .2s ease .08s!important}
+</style>
+<style>.pf-back .pf-arrow{display:flex;align-items:center;justify-content:center;width:14px;height:14px}.pf-back .pf-label{line-height:1}</style>
+<style>
+/* 천하유적 페이지 맞춤: 다크 모드에서도 검정 버튼 유지, 테두리·포커스만 보이게 보정 */
+.pf-return{border-top:0 !important}
+.pf-return a{color:var(--ink-2)}
+.pf-return a:hover{color:var(--ink)}
+.pf-back:focus-visible{outline:3px solid var(--accent)!important;outline-offset:3px!important;border-radius:999px!important}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .pf-back{box-shadow:inset 0 0 0 1px rgba(255,255,255,.16)}}
+:root[data-theme="dark"] .pf-back{box-shadow:inset 0 0 0 1px rgba(255,255,255,.16)}
+
+/* 흙빛 도장처럼 현재 구간을 표시한다. */
+.nav-links a { padding:8px 13px; border-radius:4px; border:1px solid transparent; transition:background-color .2s,color .2s,border-color .2s; }
+.nav-links a:hover { background:rgba(160,86,58,.07); color:#784630; }
+.nav-links a.on, .nav-links a[aria-current="location"] { background:#704731; color:#FFF7EB; border-color:#865A41; font-weight:800; box-shadow:inset 0 0 0 2px rgba(255,247,235,.08); }
+.nav-links a.on:hover { color:#FFF7EB; background:#603B29; border-color:#784B33; }
+.nav-links a:focus-visible { outline:2px solid #A0563A; outline-offset:3px; }
+
+</style>
+
+<link rel="stylesheet" href="cheonha-refresh.css">
+
+<style>#design .chip{align-items:flex-start}#design .chip .color-reason{margin:10px 0 0;font-size:13px;line-height:1.7;color:var(--ink-2,#5C3D2E);word-break:keep-all}</style><style>#design .chip{grid-template-rows:auto 1fr}#design .chip>div{display:grid;grid-template-rows:24px 20px 1fr;align-content:start}#design .chip b{line-height:24px}#design .chip span{line-height:20px}#design .chip .color-reason{align-self:start}</style><style>
+#design .design-choices>div{grid-template-columns:110px minmax(0,1fr);gap:24px;padding:22px 0}
+#design .design-choices dd{margin:0;min-width:0}
+#design .design-choices p{max-width:64em;line-height:1.9;word-break:keep-all}
+@media(max-width:600px){#design .design-choices>div{grid-template-columns:1fr;gap:10px}}
+</style><style>.hero-app-identity{display:flex;align-items:center;gap:9px;margin-bottom:24px}.hero-app-identity img{display:block;width:56px;height:56px;object-fit:contain;border-radius:14px;box-sizing:border-box}.hero-app-identity span{font:700 21px/1.4 var(--font,sans-serif);letter-spacing:-.03em}</style><style>header.hero.section{background:#F1ECE5}</style><style>
+.plate-example{display:block;font:600 13px/1.5 var(--font);color:var(--accent);margin:0 0 14px}.plate-example[hidden]{display:none}
+.plate .plate-ko{display:block;font:400 13px/1.65 var(--font);color:var(--ink-2);letter-spacing:0;margin-top:5px}
+.plate-translation-pair{display:block;margin-bottom:17px}.plate-translation-pair:last-child{margin-bottom:0}
+#rTitle{margin-bottom:28px}#rBody{margin-top:0;line-height:1.9}
+</style><style>
+#plate[lang="ja"] #pHead{font-family:var(--font);font-size:clamp(16px,1.65vw,24px);font-weight:600;letter-spacing:-.04em;white-space:nowrap;line-height:1.5}
+#plate[lang="ja"] #pHead .plate-ko{white-space:normal}
+@media(max-width:650px){#plate[lang="ja"] #pHead{font-size:clamp(12px,3vw,20px)}}
+</style><style>
+#concept #plate:not(.app) .plate-ko{color:#E0D3C3!important;opacity:1;font-size:14px}
+#concept #plate.app .plate-ko{color:#655247!important;opacity:1;font-size:14px}
+#concept .sign-read{display:block!important;grid-template-rows:none!important;min-height:0;padding-top:30px}
+#concept .sign-read #rTitle{margin:0 0 30px!important;line-height:1.5}
+#concept .sign-read #rBody{margin:0!important;line-height:1.9}
+#concept #plateExample{color:#A67B42!important;font-weight:700}
+</style><style>
+#concept .sign-stage{align-items:center;min-height:0}
+#concept .sign-read{padding-top:0!important;align-self:center}
+#concept .sign-read #rBody{white-space:pre-line;max-width:33em}
+@media(max-width:800px){#concept .sign-read{padding-top:0!important;align-self:auto}}
+</style><style>
+@media(min-width:801px){
+ #concept .sign-stage.translated-stage #plate{height:auto!important;min-height:0!important;padding-bottom:30px}
+ #concept .sign-stage.translated-stage .sign-read{align-self:start;padding-top:150px!important}
+}
+</style><style>.photo-reel #verdict{margin:0 0 12px;text-align:right;font-size:13px;line-height:1.6;color:var(--ink-2)}</style><style>.analogy-final .analogy-example{margin:0 0 12px;text-align:right;font-size:13px;line-height:1.6;color:var(--ink-2)}</style><style>
+#lang .language-flag-window{max-width:660px;width:100%;margin-left:auto;margin-right:auto}
+#lang .language-switcher{gap:0;padding:18px 0 24px;width:100%}
+#lang .language-switcher button{flex:0 0 25%;min-width:0;transform:scale(.78);opacity:.55}
+#lang .language-switcher button[aria-pressed=true]{transform:scale(1);opacity:1}
+#lang .language-switcher button>.flag-object{max-width:85%;background-size:contain}
+@media(max-width:600px){#lang .language-switcher button>.flag-object{width:90px;height:76px}#lang .language-switcher button span:not(.flag-object){font-size:11px}}
+</style><style>
+#lang .language-editorial{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:48px;max-width:1050px;align-items:center}
+#lang .language-editorial>img{height:390px;width:100%;object-fit:cover}
+#lang .language-reading #langSummary{min-height:0;line-height:1.95}
+#lang .language-reading[lang="en"],#lang .language-reading[lang="en"] h3{font-family:Georgia,"Times New Roman",serif;letter-spacing:0}
+#lang .language-reading[lang="ja"],#lang .language-reading[lang="ja"] h3,#plate[lang="ja"] #pHead,#plate[lang="ja"] #pNote [lang="ja"]{font-family:"Yu Mincho","YuMincho","MS PMincho",serif;letter-spacing:0}
+#lang .language-reading[lang="zh-CN"],#lang .language-reading[lang="zh-CN"] h3{font-family:"SimSun","Songti SC","PMingLiU",serif;letter-spacing:0}
+#lang .language-reading[lang="en"] h3{font-size:38px;min-height:0}
+@media(max-width:700px){#lang .language-editorial{grid-template-columns:1fr;gap:26px}#lang .language-editorial>img{height:320px}#lang .language-reading[lang="en"] h3{font-size:32px}}
+</style><style>
+@media(prefers-reduced-motion:no-preference){#design .design-sequence-item{transition:opacity .95s ease,transform .95s cubic-bezier(.2,.7,.25,1);transition-delay:var(--sequence-delay,0ms)}#design .design-sequence-item.sequence-hidden{opacity:0;transform:translateY(26px)}}
+</style><script>
+(function(){
+ if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+ var root=document.querySelector('#design'),palette=root.querySelector('.chips');
+ var cards=Array.from(root.querySelectorAll('.chip')),copy=Array.from(root.querySelectorAll('.design-choices>div')),all=cards.concat(copy);
+ function reset(){all.forEach(function(el){el.style.setProperty('--sequence-delay','0ms');el.classList.add('sequence-hidden');});}
+ all.forEach(function(el){el.classList.add('design-sequence-item');});reset();
+ new IntersectionObserver(function(entries){if(entries[0].isIntersecting){cards.forEach(function(el,i){el.style.setProperty('--sequence-delay',i*150+'ms');el.classList.remove('sequence-hidden');});copy.forEach(function(el,i){el.style.setProperty('--sequence-delay',1150+i*120+'ms');el.classList.remove('sequence-hidden');});}},{rootMargin:'0px 0px -'+Math.round(innerHeight*.4)+'px 0px',threshold:0}).observe(palette);
+ new IntersectionObserver(function(entries){var e=entries[0];if(!e.isIntersecting&&e.boundingClientRect.top>0)reset();}).observe(root);
+})();
+</script><style>.section.final{height:auto;min-height:0;padding-block:clamp(36px,4vw,58px)!important}</style><style>
+/* Measure outer whitespace from the content group, not individual child margins. */
+.section.final{height:auto;min-height:0;padding:clamp(36px,4vw,58px) 0!important}
+.section.final>.wrap{display:flex;flex-direction:column;align-items:center;gap:24px;margin-top:0;margin-bottom:0;padding-top:0;padding-bottom:0}
+.section.final>.wrap>img{display:block;margin:0!important}
+.section.final>.wrap>h2{margin:0!important}
+.section.final>.wrap>p,.section.final>.wrap>a{margin-top:0;margin-bottom:0}
+</style></body>
+</html>

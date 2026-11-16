@@ -1,0 +1,42 @@
+{
+  "figma": {
+    "file": "figma.svg",
+    "source": "https://static.figma.com/app/icon/1/favicon.svg"
+  },
+  "claude": {
+    "file": "claude.svg",
+    "source": "https://claude.ai/favicon.svg"
+  },
+  "gemini": {
+    "file": "gemini.png",
+    "source": "https://www.gstatic.com/lamda/images/gemini_sparkle_4g_512_lt_f94943af3be039176192d.png"
+  },
+  "chatgpt": {
+    "file": "chatgpt.svg",
+    "source": "https://chatgpt.com/cdn/assets/favicon.6a33781f61.svg"
+  },
+  "midjourney": {
+    "file": "midjourney.png",
+    "source": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://midjourney.com&size=128"
+  },
+  "dreamina": {
+    "file": "dreamina.png",
+    "source": "https://p16-seeyou-sg.ibyteimg.com/tos-alisg-i-2zwwjm3azk-sg/40fed40e0bd1411292155e446a0f3a30~tplv-2zwwjm3azk-compress:q90.image"
+  },
+  "flutter": {
+    "file": "flutter.png",
+    "source": "https://flutter.dev/assets/favicon.26abda3864324ef4ac32dd0d3ce28907.png"
+  },
+  "dotnet": {
+    "file": "dotnet.svg",
+    "source": "https://raw.githubusercontent.com/dotnet/brand/main/logo/dotnet-logo.svg"
+  },
+  "github": {
+    "file": "github.svg",
+    "source": "https://github.githubassets.com/favicons/favicon.svg"
+  },
+  "vscode": {
+    "file": "vscode.png",
+    "source": "https://raw.githubusercontent.com/microsoft/vscode/main/resources/linux/code.png"
+  }
+}
