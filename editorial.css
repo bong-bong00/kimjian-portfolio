@@ -201,9 +201,9 @@ body{overflow-x:clip}
 .intro-copy>h1,.intro-copy>p{position:relative;z-index:1}
 .intro-glow{position:absolute;left:50%;top:50%;width:min(800px,calc(100% + 140px));aspect-ratio:1;translate:-50% -50%;z-index:0;pointer-events:none}
 .intro-glow>span{position:absolute;inset:0;border-radius:50%}
-.intro-glow .tint{background:radial-gradient(closest-side,rgba(114,228,203,.16),rgba(142,212,249,.11) 55%,rgba(191,232,255,.04) 82%,rgba(215,246,255,0));opacity:0;scale:.05}
+.intro-glow .tint{background:radial-gradient(closest-side,rgba(100,130,170,.15),rgba(150,175,205,.10) 55%,rgba(215,225,238,.05) 82%,rgba(215,225,238,0));opacity:0;scale:.05}
 /* 아주 옅은 선 두 줄만 */
-.intro-glow .ring{opacity:0;scale:.08;border:1px solid rgba(66,183,193,.12)}
+.intro-glow .ring{opacity:0;scale:.08;border:1px solid rgba(90,115,150,.14)}
 .intro-glow.bloom .tint{animation:tint-spread 4s cubic-bezier(.2,.65,.25,1) forwards}
 .intro-glow.bloom .ring{animation:ring-out 3.6s cubic-bezier(.2,.6,.3,1) forwards}
 .intro-glow.bloom .ring:nth-of-type(3){animation-delay:.7s}
