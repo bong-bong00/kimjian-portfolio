@@ -201,24 +201,14 @@ body{overflow-x:clip}
 .intro-copy>h1,.intro-copy>p{position:relative;z-index:1}
 .intro-glow{position:absolute;left:50%;top:50%;width:min(800px,calc(100% + 140px));aspect-ratio:1;translate:-50% -50%;z-index:0;pointer-events:none}
 .intro-glow>span{position:absolute;inset:0;border-radius:50%}
-/* 1) 물방울이 위에서 떨어져 수면에 닿고, 납작하게 퍼지며 스며든다 */
-.intro-glow .drop{inset:auto;left:50%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;background:radial-gradient(circle at 36% 30%,rgba(255,255,255,.9),rgba(126,154,192,.6) 45%,rgba(58,86,126,.8));box-shadow:0 2px 6px rgba(40,60,90,.25);opacity:0}
-/* 2) 번지는 물빛: 가운데가 진하고 가장자리로 갈수록 옅게 */
-.intro-glow .tint{background:radial-gradient(closest-side,rgba(84,114,156,.26),rgba(130,158,194,.17) 50%,rgba(196,210,230,.08) 80%,rgba(215,225,238,0));opacity:0;scale:.02}
-/* 3) 물결: 빛 받는 안쪽 테두리 + 그늘진 바깥 테두리. 첫 물결이 가장 진하고 빠르며, 뒤로 갈수록 느리고 옅다 */
-.intro-glow .ring{opacity:0;scale:.02;border:2px solid rgba(70,100,140,.34);box-shadow:inset 0 0 0 1px rgba(255,255,255,.7),inset 0 0 18px rgba(70,100,140,.1),0 0 16px rgba(70,100,140,.1)}
-.intro-glow .ring:nth-of-type(4){--o:.7}
-.intro-glow .ring:nth-of-type(5){--o:.45}
-.intro-glow .ring:nth-of-type(6){--o:.25}
-.intro-glow.bloom .drop{animation:drop-hit .7s cubic-bezier(.4,0,.6,1) forwards}
-.intro-glow.bloom .tint{animation:tint-spread 4.4s cubic-bezier(.12,.7,.2,1) .4s forwards}
-.intro-glow.bloom .ring{animation:ring-out 3.2s cubic-bezier(.1,.65,.25,1) .42s forwards}
-.intro-glow.bloom .ring:nth-of-type(4){animation-duration:3.5s;animation-delay:.72s}
-.intro-glow.bloom .ring:nth-of-type(5){animation-duration:3.8s;animation-delay:1.08s}
-.intro-glow.bloom .ring:nth-of-type(6){animation-duration:4.1s;animation-delay:1.5s}
-@keyframes drop-hit{0%{opacity:0;translate:0 -70px;scale:.7 1.15}45%{opacity:1;translate:0 0;scale:.85 1.1}58%{opacity:1;translate:0 0;scale:1.5 .55}100%{opacity:0;translate:0 0;scale:2.6 .2}}
-@keyframes tint-spread{0%{opacity:0;scale:.02}10%{opacity:1}72%{scale:1.03}100%{opacity:1;scale:1}}
-@keyframes ring-out{0%{opacity:0;scale:.02}6%{opacity:var(--o,1)}55%{opacity:calc(var(--o,1)*.5)}100%{opacity:0;scale:1}}
+.intro-glow .tint{background:radial-gradient(closest-side,rgba(100,130,170,.15),rgba(150,175,205,.10) 55%,rgba(215,225,238,.05) 82%,rgba(215,225,238,0));opacity:0;scale:.05}
+/* 아주 옅은 선 두 줄만 */
+.intro-glow .ring{opacity:0;scale:.08;border:1px solid rgba(90,115,150,.14)}
+.intro-glow.bloom .tint{animation:tint-spread 4s cubic-bezier(.2,.65,.25,1) forwards}
+.intro-glow.bloom .ring{animation:ring-out 3.6s cubic-bezier(.2,.6,.3,1) forwards}
+.intro-glow.bloom .ring:nth-of-type(3){animation-delay:.7s}
+@keyframes tint-spread{0%{opacity:0;scale:.05}15%{opacity:1}100%{opacity:1;scale:1}}
+@keyframes ring-out{0%{opacity:0;scale:.08}15%{opacity:1}100%{opacity:0;scale:.95}}
 .intro-glow.static .tint{opacity:1;scale:1}
 .section-pictogram{transform-origin:50% 50%}
 
