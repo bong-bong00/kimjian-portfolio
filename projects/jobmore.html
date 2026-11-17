@@ -698,7 +698,7 @@ h2 { font-size:clamp(28px,3.2vw,40px); }
 </style>
 
 <header class="nav">
-  <div class="wrap nav-in">
+  <div class="wrap nav-in"><a class="header-app-identity" href="#top"><img src="img/logo.png" alt="" width="56" height="56"><span>잡모아</span></a>
     
     <nav class="nav-links" aria-label="페이지 목차">
       <a href="#why">소개</a>
@@ -716,7 +716,7 @@ h2 { font-size:clamp(28px,3.2vw,40px); }
   <section class="sec" style="padding-bottom:clamp(26px,3vw,44px)">
     <div class="wrap">
       <div class="hero-layout">
-      <div class="hero-copy"><div class="hero-app-identity"><img src="img/logo.png" alt="" width="56" height="56"><span>잡모아</span></div>
+      <div class="hero-copy">
         <h1>흩어진 지원 현황을<br>한 곳에 <span class="hl">모아서</span>,<br>합격은 <span class="hl">더 (More)</span></h1>
         <p class="lead" style="margin-top:20px">마감·면접 D-day를 색으로 경고하고 단계별 합격률까지 자동 집계하는 <b>취업 지원 관리 데스크톱 앱</b>.<br>자소서는 선택한 항목만으로 AI가 초안을 씁니다.</p>
         <div class="cta">
@@ -1951,4 +1951,8 @@ h2 { font-size:clamp(28px,3.2vw,40px); }
 .sec.final .final-content>img{display:block;margin:0!important}
 .sec.final .final-content>h2{margin:0!important}
 .sec.final .final-content>p,.sec.final .final-content>a{margin-top:0;margin-bottom:0}
+</style><style>
+.header-app-identity{display:inline-flex;align-items:center;gap:8px;flex:none;margin-right:auto;text-decoration:none;color:inherit;font:700 19px/1.4 var(--font,sans-serif);letter-spacing:-.03em;white-space:nowrap}
+.header-app-identity img{display:block;width:30px;height:30px;object-fit:contain;border-radius:8px}
+@media(max-width:600px){.header-app-identity{font-size:16px;gap:6px}.header-app-identity img{width:26px;height:26px}}
 </style></body></html>

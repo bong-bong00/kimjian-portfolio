@@ -612,7 +612,7 @@ h1, h2, h3, h4, h5 { font-family: var(--title); font-weight: 500 !important; let
 <body>
 
 <nav class="nav" id="nav">
-  <div class="wrap nav-inner">
+  <div class="wrap nav-inner"><a class="header-app-identity" href="#top"><img src="img/cheonha/icon.webp" alt="" width="56" height="56"><span>천하유적</span></a>
     
     <div class="nav-links">
       <a href="#concept">기획</a>
@@ -627,7 +627,7 @@ h1, h2, h3, h4, h5 { font-family: var(--title); font-weight: 500 !important; let
   <div class="wrap">
     <div class="hero-grid">
       <div>
-        <div class="hero-app-identity"><img src="img/cheonha/icon.webp" alt="" width="56" height="56"><span>천하유적</span></div>
+        
         <h1>안내판 앞에서<br>멈추지 않도록</h1>
         <p class="lead">한자와 전문 용어로 가득한 안내판을 사진 한 장으로 판독하고, 외국인에게는 자국 문화에 빗대어 설명하는 다국어 문화유산 도슨트 앱.</p>
         <div class="cta">
@@ -1305,5 +1305,9 @@ h1, h2, h3, h4, h5 { font-family: var(--title); font-weight: 500 !important; let
 .section.final>.wrap>img{display:block;margin:0!important}
 .section.final>.wrap>h2{margin:0!important}
 .section.final>.wrap>p,.section.final>.wrap>a{margin-top:0;margin-bottom:0}
+</style><style>
+.header-app-identity{display:inline-flex;align-items:center;gap:8px;flex:none;margin-right:auto;text-decoration:none;color:inherit;font:700 19px/1.4 var(--font,sans-serif);letter-spacing:-.03em;white-space:nowrap}
+.header-app-identity img{display:block;width:30px;height:30px;object-fit:contain;border-radius:8px}
+@media(max-width:600px){.header-app-identity{font-size:16px;gap:6px}.header-app-identity img{width:26px;height:26px}}
 </style></body>
 </html>

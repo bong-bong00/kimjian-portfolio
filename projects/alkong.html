@@ -985,7 +985,7 @@ input[type=range] { width: 100%; margin-top: 20px; accent-color: var(--point); h
 <body>
 
 <div class="nav" id="nav">
-  <div class="wrap nav-in">
+  <div class="wrap nav-in"><a class="header-app-identity" href="#top"><img src="../icons/app_alkong.png" alt="" width="56" height="56"><span>알콩약콩</span></a>
     
     <ol id="navlinks">
       <li><a href="#about" data-sec="about why"><span data-label="기획">기획</span></a></li>
@@ -998,7 +998,7 @@ input[type=range] { width: 100%; margin-top: 20px; accent-color: var(--point); h
 
 <div class="hero" id="top">
   <div class="wrap hero-grid">
-    <div class="hero-copy"><div class="hero-app-identity"><img src="../icons/app_alkong.png" alt="" width="56" height="56"><span>알콩약콩</span></div>
+    <div class="hero-copy">
       <p class="tagline">처방전 인식 · 식약처 의약품 정보 · 심박 측정</p>
       <h1>처방전 한 장으로<br>정해지는 하루 복약 일정</h1>
       <p class="sub">약 이름과 용량, 하루 몇 번 며칠치인지를 읽어 복약 일정으로 만듭니다. 함께 복용해도 되는지는 식약처 자료로 대조하고, 복용 시각과 그때의 심박까지 한 줄에 남깁니다.</p>
@@ -2484,5 +2484,9 @@ p, li, dd, span { text-wrap: wrap; }
 .role-pictogram svg, .role-pictogram img { display: none !important; }
 @media (max-width: 560px) { .role-pictogram.guardian, .role-pictogram.patient { width: 60px !important; height: 60px !important; } }
 </style>
-</body>
+<style>
+.header-app-identity{display:inline-flex;align-items:center;gap:8px;flex:none;margin-right:auto;text-decoration:none;color:inherit;font:700 19px/1.4 var(--font,sans-serif);letter-spacing:-.03em;white-space:nowrap}
+.header-app-identity img{display:block;width:30px;height:30px;object-fit:contain;border-radius:8px}
+@media(max-width:600px){.header-app-identity{font-size:16px;gap:6px}.header-app-identity img{width:26px;height:26px}}
+</style></body>
 </html>

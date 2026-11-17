@@ -777,8 +777,8 @@ footer { border-top: 1px solid var(--line); }
 </style>
 
 <header class="nav">
-  <div class="wrap nav-inner">
-    <span class="pf-brand-row"></span>
+  <div class="wrap nav-inner"><a class="header-app-identity" href="#top"><img src="img/app-icon.webp" alt="" width="56" height="56"><span>플로고</span></a>
+    
     <nav class="nav-links" id="navLinks" aria-label="페이지 목차">
       <a href="#concept" data-label="컨셉">컨셉</a>
       <a href="#how" data-label="이용 흐름">이용 흐름</a>
@@ -794,7 +794,7 @@ footer { border-top: 1px solid var(--line); }
 <main id="top">
   <section class="hero">
     <div class="wrap hero-grid">
-      <div class="hero-copy"><div class="hero-app-identity"><img src="img/app-icon.webp" alt="" width="56" height="56"><span>플로고</span></div>
+      <div class="hero-copy">
         <p class="eyebrow">AI 플로깅 앱 PLOGGO</p>
         <h1>동네 한 바퀴,<br>가볍게 <mark>줍죠</mark></h1>
         <p class="lead">쓰레기가 많은 길을 찾아 플로깅 코스를 생성합니다. 주운 쓰레기는 AI가 종류와 개수를 인식하고, 수거한 만큼 포인트로 적립됩니다.</p>
@@ -2206,5 +2206,9 @@ var FINISH = (function () {
 .section.final>.final-inner>img{display:block;margin:0!important}
 .section.final>.final-inner>h2{margin:0!important}
 .section.final>.final-inner>p,.section.final>.final-inner>a{margin-top:0;margin-bottom:0}
+</style><style>
+.header-app-identity{display:inline-flex;align-items:center;gap:8px;flex:none;margin-right:auto;text-decoration:none;color:inherit;font:700 19px/1.4 var(--font,sans-serif);letter-spacing:-.03em;white-space:nowrap}
+.header-app-identity img{display:block;width:30px;height:30px;object-fit:contain;border-radius:8px}
+@media(max-width:600px){.header-app-identity{font-size:16px;gap:6px}.header-app-identity img{width:26px;height:26px}}
 </style></body>
 </html>
