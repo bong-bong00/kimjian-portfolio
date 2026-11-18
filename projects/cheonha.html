@@ -1078,18 +1078,11 @@ h1, h2, h3, h4, h5 { font-family: var(--title); font-weight: 500 !important; let
     rGapText.textContent = d.gap;
     rGap.classList.toggle("ok", d.ok);
     tabs.forEach(function (t, k) { t.setAttribute("aria-selected", k === i ? "true" : "false"); });
-    if (!reduce) {
-      plate.classList.remove("plate-fade");
-      void plate.offsetWidth;
-      plate.classList.add("plate-fade");
-    }
+
   }
   tabs.forEach(function (t, i) { t.addEventListener("click", function () { paintPlate(i); }); });
   paintPlate(0);
-  autoCycle(document.getElementById("concept"),function(){
-    var active=tabs.findIndex(function(t){return t.getAttribute("aria-selected")==="true";});
-    paintPlate((active+1)%tabs.length);
-  },4800);
+  /* 같은 안내판을 세 번 읽어보면: 자동 전환과 전환 효과 없이, 탭을 눌렀을 때만 바뀐다 */
 
   /* 답사 동선: 정류장을 누르면 진열장의 화면과 전시 라벨이 함께 바뀐다 */
   var route = document.getElementById("routeLine");
