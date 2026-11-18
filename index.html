@@ -184,12 +184,13 @@ footer a{text-decoration:none}
 </style>
 <link rel="stylesheet" href="assets/fonts/app/gothic-a1.css">
 <link rel="stylesheet" href="editorial.css">
+<style>.work-award{display:block;margin-top:6px;font-style:normal;font-size:13.5px;font-weight:700;line-height:1.5;color:#8a5a2b}</style>
 
 <header class="nav">
   <div class="wrap">
     <a class="logo" href="#top">김지안 <small>(2000.07.09)</small></a>
     
-    <nav aria-label="섹션"><a href="#projects">프로젝트</a><a href="#approach">기획과 구현</a><a href="#awards">수상·학력</a></nav>
+    <nav aria-label="섹션"><a href="#projects">프로젝트</a><a href="#approach">도구</a><a href="#awards">수상·학력</a></nav>
   </div>
 </header>
 
@@ -212,9 +213,8 @@ footer a{text-decoration:none}
 
   <div class="band">
     <section class="wrap sec" id="approach">
-      <div class="sh"><h2><img class="section-pictogram" src="icons/tools.png" alt="">기획과 구현</h2></div>
-      <div class="ways" id="ways-list"></div>
-      <div class="chapter-tools"><h3 class="tools-heading">작업에 사용하는 도구</h3><div class="tools" id="tool-list"></div></div>
+      <div class="sh"><h2><img class="section-pictogram" src="icons/tools.png" alt="">작업에 사용하는 도구</h2></div>
+      <div class="chapter-tools"><div class="tools" id="tool-list"></div></div>
     </section>
   </div>
 
@@ -235,13 +235,13 @@ footer a{text-decoration:none}
 <script>
 /* ───────────── 내용은 여기서 고칩니다 ───────────── */
 const PROJECTS = [
-  { key: "ploggo", name: "Ploggo", icon: "icons/app_ploggo.png", line: "CCTV 공공데이터 기반 플로깅 코스 추천 앱", period: "2025.03 – 2026.11.10", role: "UX/UI, 앱 플로우 설계",
+  { key: "ploggo", name: "Ploggo", icon: "icons/app_ploggo.png", line: "무단투기 CCTV 데이터 기반 오염 구역 경유 플로깅 경로 추천 및 AI 수거 인증 앱", period: "2025.03 – 2026.11.10", role: "UX/UI, 앱 플로우 설계", award: "제11회 인천광역시 공공데이터 활용 경진대회 우수상",
     cover: "thumbs/ploggo.jpg", site: "projects/ploggo.html" },
-  { key: "alkong", name: "알콩약콩", icon: "icons/app_alkong.png", line: "처방전을 찍으면 복약 일정을 만들어 주는 고령자용 앱", period: "2026.03 – 2026.10.06", role: "UX/UI, 앱 플로우 설계",
+  { key: "alkong", name: "알콩약콩", icon: "icons/app_alkong.png", line: "OCR 처방전 이미지 인식 기반 고령자 맞춤형 복약 일정 관리 앱", period: "2026.03 – 2026.10.06", role: "UX/UI, 앱 플로우 설계", award: "제6회 전국 대학교 이그나이트 스토리텔링 경진대회 입상",
     cover: "thumbs/alkong-clean.png", site: "projects/alkong.html" },
-  { key: "cheonha", name: "천하유적", icon: "icons/app_cheonha.png", line: "안내판 사진으로 유적을 찾아 설명해 주는 경주 관광 앱", period: "2026.03 – 2026.07", role: "Flutter 개발, UX/UI",
+  { key: "cheonha", name: "천하유적", icon: "icons/app_cheonha.png", line: "안내판 이미지 인식 기반 경주 문화유산 식별 및 AI 해설 제공 앱", period: "2026.03 – 2026.07", role: "Flutter 개발, UX/UI", award: "2026 관광데이터 활용 공모전 선정",
     cover: "thumbs/cheonha-updated.png", site: "projects/cheonha.html" },
-  { key: "jobmoa", name: "잡모아", icon: "icons/app_jobmoa.png", line: "회사 지원 현황과 마감 일정을 관리하는 데스크톱 애플리케이션", period: "2026.07", role: "기획, 디자인, WPF 개발",
+  { key: "jobmoa", name: "잡모아", icon: "icons/app_jobmoa.png", line: "WPF 기반 채용 지원 현황 및 마감 일정 통합 관리 데스크톱 애플리케이션", period: "2026.07", role: "기획, 디자인, WPF 개발",
     cover: "thumbs/jobmoa-hd.webp", site: "projects/jobmore.html" }
 ];
 
@@ -254,21 +254,21 @@ const WAYS = [
 const TOOLS = [
   { t: "기획 · 설계", chips: ["Figma", "Figma AI"], p: "화면설계서, 컴포넌트, 프로토타입을 만듭니다." },
   { t: "AI", chips: ["Claude", "Gemini", "ChatGPT", "Midjourney", "Dreamina"], p: "기획 초안 정리와 앱 아이콘·캐릭터 제작에 씁니다. 서비스 기능에는 Gemini API를 사용했습니다." },
-  { t: "개발", chips: ["Flutter", "WPF", "WinForms", "SQL", "GitHub", "VS Code"], p: "Flutter 모바일 앱과 WPF 기반 Windows 데스크톱 애플리케이션을 개발해 봤고, 팀 작업은 GitHub로 합니다." }
+  { t: "개발", chips: ["Flutter", "WPF", "WinForms", "C#", "C++", "SQL", "GitHub", "VS Code"], p: "Flutter 모바일 앱과 WPF 기반 Windows 데스크톱 애플리케이션을 개발해 봤고, 팀 작업은 GitHub로 합니다." }
 ];
 
 const AWARDS = [
   ["2026.11", "ACK 2026 학부생 논문경진대회 논문 채택 · 구두 발표 (공동저자)", "ploggo"],
   ["2026.04", "2026 한이음 드림업 사업 선정 (창의도전형)", "ploggo"],
-  ["2026.04", "2026 관광데이터 활용 공모전 예비심사(기획) 통과", "cheonha"],
+  ["2026.04", "2026 관광데이터 활용 공모전 선정", "cheonha"],
   ["2026.03", "제6회 전국 대학교 이그나이트 스토리텔링 경진대회 입상", "alkong"],
   ["2025.07", "제11회 인천광역시 공공데이터 활용 경진대회 우수상", "ploggo"],
   ["2025.05", "AI로 만드는 인천 미래 공모전 참가", ""]
 ];
 
 const EDU = [
-  ["2025.03 –", "한국폴리텍대학", "컴퓨터공학"],
-  ["2019.03 – 2022.02", "유한대학교", "보건복지학"]
+  ["2025.03 – 2027.02 (졸업예정)", "한국폴리텍대학 인천캠퍼스", "컴퓨터공학과"],
+  ["2019.03 – 2022.02", "유한대학교", "보건복지학과"]
 ];
 
 /* ───────────── 렌더링 ───────────── */
@@ -279,9 +279,6 @@ const col = k => `--c:var(--${k});--on:var(--${k}-on)`;
 const la = u => /^https?:/.test(u) ? ` target="_blank" rel="noopener"` : "";
 const icon = k => `<img class="app" src="${esc(P[k].icon)}" alt="">`;
 
-$("ways-list").innerHTML = WAYS.map(w => `
-  <article class="way"><h3>${esc(w.t)}</h3><p>${esc(w.p)}</p>
-  <span class="from">${w.projects.map(k => `<span class="from-project">${icon(k)}${esc(P[k].name)}</span>`).join("")}</span></article>`).join("");
 
 const projectTitles = {
   ploggo: "걷기 좋은 길에서,<br>쓰레기를 줍는 길로.",
@@ -298,10 +295,10 @@ $("project-list").innerHTML = PROJECTS.map((p, i) => `
       ${p.key === "alkong" ? `<svg class="alkong-heartbeat" viewBox="0 0 240 120" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="alkong-pulse-fade"><stop stop-color="#3558f5" stop-opacity="0"/><stop offset=".22" stop-color="#3558f5" stop-opacity=".7"/><stop offset=".78" stop-color="#3558f5" stop-opacity=".7"/><stop offset="1" stop-color="#3558f5" stop-opacity="0"/></linearGradient></defs><path d="M0 60 H240"/></svg>` : ""}
       ${p.key === "alkong" ? `<span class="alkong-device" aria-hidden="true"><img class="alkong-device-art" src="${esc(p.cover)}" alt=""></span>` : ""}
     ${p.site ? '</a>' : '</div>'}
-    <div class="work-bottom"><div><p>${esc(p.line)}</p><span>${esc(p.role)} · ${esc(p.period)}</span></div>${p.site ? "" : '<span class="work-pending">상세 준비 중</span>'}</div>
+    <div class="work-bottom"><div><p>${esc(p.line)}</p><span>${esc(p.role)} · ${esc(p.period)}</span>${p.award ? `<em class="work-award">${esc(p.award)}</em>` : ""}</div>${p.site ? "" : '<span class="work-pending">상세 준비 중</span>'}</div>
   </article>`).join("");
 
-const toolIcons = {Figma:"figma.svg", "Figma AI":"figma.svg", Claude:"claude.svg", Gemini:"gemini.png", ChatGPT:"chatgpt.svg", Midjourney:"midjourney.png", Dreamina:"dreamina.png", Flutter:"flutter.png", WPF:"dotnet.svg", WinForms:"dotnet.svg", SQL:"database.svg", GitHub:"github.svg", "VS Code":"vscode.png"};
+const toolIcons = {Figma:"figma.svg", "Figma AI":"figma.svg", Claude:"claude.svg", Gemini:"gemini.png", ChatGPT:"chatgpt.svg", Midjourney:"midjourney.png", Dreamina:"dreamina.png", Flutter:"flutter.png", WPF:"dotnet.svg", WinForms:"dotnet.svg", "C#":"csharp.svg", "C++":"cplusplus.svg", SQL:"database.svg", GitHub:"github.svg", "VS Code":"vscode.png"};
 $("tool-list").innerHTML = TOOLS.map(t => `
   <article class="tool"><h3>${esc(t.t)}</h3><div class="chips">${t.chips.map(c => `<span><img src="assets/tool-icons/${toolIcons[c]}" alt="" aria-hidden="true">${esc(c)}</span>`).join("")}</div></article>`).join("");
 

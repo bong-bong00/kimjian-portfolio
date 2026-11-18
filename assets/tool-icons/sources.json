@@ -38,5 +38,13 @@
   "vscode": {
     "file": "vscode.png",
     "source": "https://raw.githubusercontent.com/microsoft/vscode/main/resources/linux/code.png"
+  },
+  "csharp": {
+    "file": "csharp.svg",
+    "source": "devicon 2.16.0 (MIT) icons/csharp/csharp-original.svg"
+  },
+  "cplusplus": {
+    "file": "cplusplus.svg",
+    "source": "devicon 2.16.0 (MIT) icons/cplusplus/cplusplus-original.svg"
   }
 }
