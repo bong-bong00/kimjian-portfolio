@@ -606,7 +606,7 @@ h1, h2, h3, h4, h5 { font-family: var(--title); font-weight: 500 !important; let
 .btn:hover { transform: translateY(-2px); }
 .btn svg { width: 19px; height: 19px; fill: currentColor; }
 .btn.sig { background: var(--accent); color: #fff; }
-.btn.ghost { background: var(--soft); color: var(--ink); }
+.btn.ghost { background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line), 0 6px 16px -10px rgba(58, 42, 32, .35); }
 </style>
 </head>
 <body>
@@ -794,7 +794,7 @@ h1, h2, h3, h4, h5 { font-family: var(--title); font-weight: 500 !important; let
 <section class="section heritage-index" id="features"><div class="wrap"><div class="feature-intro"><span class="eyebrow">현장에서 쓰는 다섯 가지</span><h2>찍고, 이해하고, 다녀온 곳을 남깁니다</h2><p class="body">촬영한 안내판에서 유적을 찾고,<br>설명을 확인한 뒤 방문 기록을 남깁니다.</p></div><ol class="heritage-contents">
 <li><a href="#match"><span>01</span><div><h3>사진으로 읽기</h3><p>이름과 한자를 몰라도, 안내판을 찍어 유적을 찾습니다.</p></div></a></li>
 <li><a href="#analogy"><span>02</span><div><h3>익숙한 것에 빗대어 이해</h3><p>내 문화에서 익숙한 대상과 비교해 설명을 듣습니다.</p></div></a></li>
-<li><a href="#chat"><span>03</span><div><h3>유적 AI에게 묻기</h3><p>궁금한 점을 채팅이나 음성으로 묻고 짧은 답을 받습니다.</p></div></a></li>
+<li><a href="#chat"><span>03</span><div><h3>AI 가이드에게 묻기</h3><p>궁금한 점을 채팅이나 음성으로 묻고 짧은 답을 받습니다.</p></div></a></li>
 <li><a href="#lang"><span>04</span><div><h3>내 언어로 둘러보기</h3><p>한국어·영어·일본어·중국어로 화면을 바꿉니다.</p></div></a></li>
 <li><a href="#record"><span>05</span><div><h3>답사 기록 모으기</h3><p>방문한 유적을 모아 보고, 다시 찾아볼 수 있습니다.</p></div></a></li>
 </ol></div></section>
@@ -820,16 +820,16 @@ h1, h2, h3, h4, h5 { font-family: var(--title); font-weight: 500 !important; let
 <section class="section analogy-sec" id="analogy"><div class="wrap"><div class="sec-head"><h2>낯선 석탑을 익숙한 건축에 빗대어</h2></div>
 <div class="analogy-final point-comparison" data-part="roof"><p class="analogy-example">일본인 관람객 예시</p><div class="comparison-monuments"><figure class="comparison-monument korea"><div class="comparison-photo"><div class="photo-free-zoom external-part-zoom korea-zoom" role="img" aria-label="미륵사지 석탑 선택 부분 확대"></div><img src="img/cheonha/mireuksa.jpg" alt="미륵사지 석탑"><button type="button" class="photo-hotspot hotspot-roof" data-photo-part="roof" aria-label="미륵사지 석탑 지붕 확대" aria-pressed="true"><span class="hotspot-dot"></span></button><button type="button" class="photo-hotspot hotspot-pillar" data-photo-part="pillar" aria-label="미륵사지 석탑 기둥 확대" aria-pressed="false"><span class="hotspot-dot"></span></button></div><figcaption><b>미륵사지 석탑</b></figcaption></figure><figure class="comparison-monument japan"><div class="comparison-photo"><div class="photo-free-zoom external-part-zoom japan-zoom" role="img" aria-label="호류지 오층목탑 선택 부분 확대"></div><img src="img/cheonha/horyuji.jpg" alt="호류지 오층목탑"><button type="button" class="photo-hotspot hotspot-roof" data-photo-part="roof" aria-label="호류지 오층목탑 지붕 확대" aria-pressed="true"><span class="hotspot-dot"></span></button><button type="button" class="photo-hotspot hotspot-pillar" data-photo-part="pillar" aria-label="호류지 오층목탑 기둥 확대" aria-pressed="false"><span class="hotspot-dot"></span></button></div><figcaption><b>호류지 오층목탑</b></figcaption></figure></div><div class="comparison-explanation"><h3>익숙한 목탑에서 석탑의 구조를 읽습니다</h3><p>미륵사지 석탑을 처음 보는 일본인 관람객에게는 호류지 오층목탑을 떠올리며 설명합니다. 호류지는 나무로 지은 탑이고 미륵사지 석탑은 돌로 만든 탑이지만, 목조건축의 형태를 기준으로 보면 낯선 석탑의 요소를 이해하기 쉽습니다.</p><h4>층마다 밖으로 뻗은 지붕</h4><p>호류지 목탑에서 층층이 이어지는 지붕선을 먼저 살펴보세요. 미륵사지 석탑에서도 각 층을 덮고 밖으로 뻗은 지붕돌, 즉 옥개석을 볼 수 있습니다. 그 끝부분의 부드러운 곡선에는 목조건물의 지붕을 돌로 옮겨 표현한 특징이 남아 있습니다. 두 사진의 지붕 점을 선택하면 이 부분을 가까이 비교할 수 있습니다.</p><h4>건물을 받치는 기둥과 가로 부재</h4><p>호류지의 아래층에서는 나무 기둥이 건물을 받치는 모습을 볼 수 있습니다. 미륵사지 석탑의 1층에도 기둥 모양으로 세운 돌 부재와 그 위를 가로로 연결하는 형태가 남아 있습니다. 모서리 기둥에는 가운데가 불룩한 배흘림 표현도 있어, 돌로 쌓은 탑 안에서 목조건축의 흔적을 읽을 수 있습니다.</p><p>이 비교는 두 탑의 구조나 모습이 같다는 뜻이 아닙니다. 익숙한 자국 문화재를 출발점으로 삼아, 다른 재료로 만든 유적에서도 지붕과 기둥 같은 건축 요소를 발견하도록 돕는 해설입니다.</p></div></div></div></section>
 
-<section class="section chat-sec" id="chat"><div class="wrap chat-grid"><div class="chat-copy"><span class="eyebrow">유적 AI</span><h2>궁금한 건 그 자리에서<br>유적 AI에게 묻습니다</h2><p class="body">하단 탭의 유적 AI에서 유적과 경주 역사에 대해 대화로 묻습니다. 답사 중에 읽기 편하도록 답은 두세 문장으로 짧게 돌려주고, 앞선 대화를 기억해 이어서 질문할 수 있습니다.</p>
-<ul class="chat-points"><li><b>추천 질문</b><span>무엇을 물을지 몰라도 추천 질문 4개를 눌러 바로 시작합니다.</span></li><li><b>음성으로 질문</b><span>마이크 버튼을 누르고 말하면 질문이 입력됩니다.</span></li><li><b>이어지는 대화</b><span>이전 대화 기록을 함께 보내 앞의 내용을 이어서 답합니다.</span></li><li><b>한국어 · 영어</b><span>앱 언어 설정에 맞춰 안내 문구와 추천 질문이 바뀝니다.</span></li></ul>
-<p class="chat-stack">Gemini 2.5 Flash · Firebase Functions</p></div>
-<figure class="chat-phone" aria-label="유적 AI 대화 예시"><div class="chat-head"><span class="chat-avatar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.2 3.6c-.5.4-1.3.1-1.3-.6V16A2.5 2.5 0 0 1 4 13.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span><div><b>유적 AI</b><small>경주에 대해 무엇이든</small></div></div>
-<div class="chat-body"><p class="bubble ai">안녕하세요! 경주 유적 가이드예요. 유적지나 유적에 대해 무엇이든 물어보세요.</p>
+<section class="section chat-sec" id="chat"><div class="wrap"><div class="sec-head"><h2>궁금한 건 그 자리에서 AI 가이드에게</h2><p class="body">하단 탭의 AI 가이드에서 유적과 경주 역사를 대화로 묻습니다. 답사 중에 읽기 편하도록 답은 두세 문장으로 짧게 돌려주고, 앞선 대화를 기억해 이어서 질문할 수 있습니다.</p></div>
+<div class="chat-grid"><figure class="chat-phone-wrap"><div class="phone chat-device" aria-label="AI 가이드 대화 예시"><div class="screens"><div class="scr on"><div class="scr-body chat-body">
+<div class="chat-top"><span class="chat-avatar"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.2 3.6c-.5.4-1.3.1-1.3-.6V16A2.5 2.5 0 0 1 4 13.5z"/></svg></span><div><b>AI 가이드</b><small>경주에 대해 무엇이든</small></div></div>
+<p class="bubble ai">안녕하세요! 경주 유적 가이드예요. 유적지나 유적에 대해 무엇이든 물어보세요.</p>
 <div class="chat-suggest"><span>추천 질문</span><div><i>불국사는 어떤 곳이야?</i><i>신라 시대가 뭐야?</i><i>경주에서 꼭 봐야 할 유적은?</i><i>석가탑이랑 다보탑 차이는?</i></div></div>
 <p class="bubble me">불국사는 어떤 곳이야?</p>
-<p class="bubble ai">불국사는 신라 경덕왕 때인 751년에 김대성이 짓기 시작한 사찰이에요. 경내에 석가탑과 다보탑이 나란히 서 있고, 1995년 석굴암과 함께 유네스코 세계유산에 올랐어요.</p></div>
-<div class="chat-input"><span>질문을 입력하세요…</span><svg class="mic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM6 11a6 6 0 0 0 12 0M12 17v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="send" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 19V6M6.5 11.5 12 6l5.5 5.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
-<figcaption>대화 예시</figcaption></figure></div></section>
+<p class="bubble ai">불국사는 신라 경덕왕 때인 751년에 김대성이 짓기 시작한 사찰이에요. 경내에 석가탑과 다보탑이 나란히 서 있고, 1995년 석굴암과 함께 유네스코 세계유산에 올랐어요.</p>
+<div class="chat-input"><span>질문을 입력하세요…</span><em class="mic"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/></svg></em><em class="send"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V6M6.5 11.5 12 6l5.5 5.5"/></svg></em></div>
+</div><div class="scr-nav"><div><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3.5 10.5 12 4l8.5 6.5V20H15v-5.5H9V20H3.5z"/></svg></i>홈</div><div class="on"><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M4 5.5h6a2 2 0 0 1 2 2V20a2.4 2.4 0 0 0-2-1.4H4zM20 5.5h-6a2 2 0 0 0-2 2V20a2.4 2.4 0 0 1 2-1.4h6z"/></svg></i>AI 가이드</div><div><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3.5 8.5h3.2l1.6-2h7.4l1.6 2h3.2V19H3.5z"/><circle cx="12" cy="13.2" r="3.1"/></svg></i>인식</div><div><i><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M7.5 4.5h13v13h-13z"/><path d="M4.5 7.5v12h12"/></svg></i>컬렉션</div></div></div></div></div><figcaption class="chat-example">대화 예시</figcaption></figure>
+<div class="chat-side"><ul class="chat-cards"><li class="chat-card"><span class="chat-ic"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5a5.5 5.5 0 0 0-3.3 9.9c.5.4.8 1 .8 1.6v.5h5v-.5c0-.6.3-1.2.8-1.6A5.5 5.5 0 0 0 12 3.5z"/><path d="M9.8 18.5h4.4M10.6 21h2.8"/></svg></span><span class="chat-no">01</span><b>추천 질문으로 시작</b><span class="chat-desc">무엇을 물을지 몰라도 추천 질문 4개 중 하나를 누르면 바로 대화가 시작됩니다.</span></li><li class="chat-card"><span class="chat-ic"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/></svg></span><span class="chat-no">02</span><b>말로 묻는 질문</b><span class="chat-desc">마이크 버튼을 누르고 말하면 질문이 입력창에 채워집니다. 걸으면서도 묻기 쉽습니다.</span></li><li class="chat-card"><span class="chat-ic"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h7A2.5 2.5 0 0 1 16 6.5v4a2.5 2.5 0 0 1-2.5 2.5H9l-3.2 2.6V13A2.5 2.5 0 0 1 4 10.5z"/><path d="M16 9h1.5A2.5 2.5 0 0 1 20 11.5v4a2.5 2.5 0 0 1-2 2.4V20.5L15 18h-3a2.5 2.5 0 0 1-2.2-1.3"/></svg></span><span class="chat-no">03</span><b>이어지는 대화</b><span class="chat-desc">앞선 대화 기록을 함께 보내, 앞에서 물은 유적을 다시 말하지 않아도 이어서 답합니다.</span></li><li class="chat-card"><span class="chat-ic"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.3 2.4 3.4 5.2 3.4 8.5s-1.1 6.1-3.4 8.5c-2.3-2.4-3.4-5.2-3.4-8.5s1.1-6.1 3.4-8.5z"/></svg></span><span class="chat-no">04</span><b>한국어 · 영어</b><span class="chat-desc">앱 언어 설정에 맞춰 첫 인사와 추천 질문, 입력 안내가 함께 바뀝니다.</span></li></ul></div></div></div></section>
 
 <section class="section" id="lang"><div class="wrap"><div class="sec-head"><h2>화면 위에서 내 언어로 바꿉니다</h2><p class="body">언어를 선택하면 장소 이름과 안내 문구가 함께 바뀝니다.</p></div>
 <div class="language-sheet"><div class="language-flag-window"><div class="language-switcher" role="group" aria-label="국기로 표시 언어 선택"><button type="button" data-lang="0" data-flag-position="0" aria-pressed="false"><span class="flag-object"><span class="flag-object"><img src="img/cheonha/flag-kr.png" alt="대한민국 국기"></span></span><span>한국어</span></button><button type="button" data-lang="1" data-flag-position="1" aria-pressed="false"><span class="flag-object"><span class="flag-object"><img src="img/cheonha/flag-us.png" alt="미국 국기"></span></span><span>English</span></button><button type="button" data-lang="2" data-flag-position="2" aria-pressed="false"><span class="flag-object"><span class="flag-object"><img src="img/cheonha/flag-jp.png" alt="일본 국기"></span></span><span>日本語</span></button><button type="button" data-lang="3" data-flag-position="3" aria-pressed="false"><span class="flag-object"><span class="flag-object"><img src="img/cheonha/flag-cn.png" alt="중국 국기"></span></span><span>中文</span></button><button type="button" data-lang="0" data-flag-position="4" aria-pressed="false"><span class="flag-object"><span class="flag-object"><img src="img/cheonha/flag-kr.png" alt="대한민국 국기"></span></span><span>한국어</span></button><button type="button" data-lang="1" data-flag-position="5" aria-pressed="false"><span class="flag-object"><span class="flag-object"><img src="img/cheonha/flag-us.png" alt="미국 국기"></span></span><span>English</span></button><button type="button" data-lang="2" data-flag-position="6" aria-pressed="false"><span class="flag-object"><span class="flag-object"><img src="img/cheonha/flag-jp.png" alt="일본 국기"></span></span><span>日本語</span></button><button type="button" data-lang="3" data-flag-position="7" aria-pressed="false"><span class="flag-object"><span class="flag-object"><img src="img/cheonha/flag-cn.png" alt="중국 국기"></span></span><span>中文</span></button><button type="button" data-lang="0" data-flag-position="8" aria-pressed="false"><span class="flag-object"><span class="flag-object"><img src="img/cheonha/flag-kr.png" alt="대한민국 국기"></span></span><span>한국어</span></button><button type="button" data-lang="1" data-flag-position="9" aria-pressed="false"><span class="flag-object"><span class="flag-object"><img src="img/cheonha/flag-us.png" alt="미국 국기"></span></span><span>English</span></button><button type="button" data-lang="2" data-flag-position="10" aria-pressed="false"><span class="flag-object"><span class="flag-object"><img src="img/cheonha/flag-jp.png" alt="일본 국기"></span></span><span>日本語</span></button><button type="button" data-lang="3" data-flag-position="11" aria-pressed="false"><span class="flag-object"><span class="flag-object"><img src="img/cheonha/flag-cn.png" alt="중국 국기"></span></span><span>中文</span></button></div></div><div class="language-editorial"><img src="img/cheonha/gyeongbokgung.jpg" alt="경복궁 광화문"><div class="language-reading" aria-live="polite"><span id="langLocation">서울특별시</span><h3 id="langPlace">경복궁</h3><p id="langSummary">경복궁의 전각과 궁궐의 모습을 살펴보세요. 유적 이름과 안내를 한국어로 확인할 수 있습니다.</p></div></div></div></div></section>
@@ -1332,36 +1332,36 @@ h1, h2, h3, h4, h5 { font-family: var(--title); font-weight: 500 !important; let
 .pf-award em mark{padding:0 .3em;border-radius:3px;background:var(--aw-bg);color:var(--aw-fg)}
 @media (max-width:560px){.pf-award{grid-template-columns:30px minmax(0,1fr) 30px}.pf-award .laurel{width:30px}.pf-award b{white-space:normal;font-size:15px}}
 .pf-awards{--aw-bg:var(--accent-soft);--aw-fg:var(--accent)}</style>
-<style>/* 유적 AI 채팅: 앱 ai_guide_screen과 같은 말풍선 모양(내 말은 주황 갈색, AI는 흰 바탕) */
-.chat-sec{background:var(--bg)}
-.chat-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.86fr);gap:clamp(36px,6vw,80px);align-items:center}
-.chat-copy .eyebrow{display:block;margin-bottom:14px}
-.chat-copy .body{margin-top:20px}
-.chat-points{list-style:none;margin:28px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.chat-points li{padding:18px 20px;border-radius:18px;background:var(--surface);border:1px solid var(--line);display:grid;gap:6px}
-.chat-points b{font-size:16.5px;color:var(--ink)}
-.chat-points span{font-size:14.5px;line-height:1.6;color:var(--ink-2)}
-.chat-stack{margin-top:16px;font-size:13px;color:var(--ink-3)}
-.chat-phone{margin:0;justify-self:center;width:min(360px,100%);border-radius:34px;padding:18px 16px 16px;background:#FAF6F1;border:8px solid #2E241C;box-shadow:var(--shadow);display:grid;gap:12px;color:#5C3D2E;font-family:"Noto Sans KR","Apple SD Gothic Neo",system-ui,sans-serif}
-.chat-head{display:flex;align-items:center;gap:10px;padding-bottom:10px;border-bottom:1px solid #EAE0D2}
-.chat-avatar{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:#F6EDE6;color:#A0563A}
-.chat-avatar svg{width:20px;height:20px}
-.chat-head b{display:block;font-size:16px;line-height:1.3}
-.chat-head small{display:block;font-size:12px;color:#A67B5B}
-.chat-body{display:grid;gap:10px}
-.bubble{margin:0;max-width:84%;padding:11px 14px;font-size:13.5px;line-height:1.6;border-radius:18px}
-.bubble.ai{justify-self:start;background:#FFFFFF;color:#5C3D2E;border-bottom-left-radius:4px;box-shadow:0 2px 8px rgba(92,61,46,.06)}
-.bubble.me{justify-self:end;background:#A0563A;color:#FFFFFF;border-bottom-right-radius:4px}
-.chat-suggest span{display:block;margin-bottom:6px;font-size:11px;font-weight:700;letter-spacing:.04em;color:#A67B5B}
-.chat-suggest div{display:flex;flex-wrap:wrap;gap:6px}
-.chat-suggest i{font-style:normal;font-size:12px;font-weight:600;padding:6px 11px;border-radius:999px;background:#FFFFFF;border:1px solid #EAE0D2}
-.chat-input{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 16px;border-radius:24px;background:#FFFFFF;font-size:13px;color:#C4A789}
-.chat-input span:first-child{flex:1}
-.chat-input .mic{width:20px;height:20px;color:#C4A789}
-.chat-input .send{display:grid;place-items:center;width:36px;height:36px;border-radius:14px;background:#A0563A;color:#FFFFFF;box-shadow:0 4px 12px rgba(160,86,58,.3)}
-.chat-input .send svg{width:18px;height:18px}
-.chat-phone figcaption{text-align:right;font-size:12px;color:#A67B5B}
-@media (max-width:900px){.chat-grid{grid-template-columns:minmax(0,1fr)}.chat-points{grid-template-columns:minmax(0,1fr)}}
+<style>/* AI 가이드: 이용 흐름 폰 목업(.phone .screens .scr)을 그대로 쓰고, 기능 카드는 아이콘 타일 + 번호로 */
+.chat-sec{background:var(--soft)}
+.chat-grid{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(36px,6vw,80px);align-items:center}
+.chat-device{--pw:316px}
+.chat-body{gap:8px;padding-bottom:10px}
+.chat-top{display:flex;align-items:center;gap:8px;padding-bottom:9px;border-bottom:1px solid #F0E6D6}
+.chat-avatar{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#F6EDE6;color:#A0563A}
+.chat-top b{display:block;font-size:12.5px;font-weight:700;line-height:1.3}
+.chat-top small{display:block;font-size:9px;color:#A67B5B}
+.chat-sec .bubble{margin:0;max-width:86%;padding:8px 11px;font-size:10.5px;line-height:1.55;border-radius:14px}
+.chat-sec .bubble.ai{justify-self:start;align-self:flex-start;background:#fff;color:#5C3D2E;border-bottom-left-radius:4px;box-shadow:0 2px 8px rgba(160,86,58,.07)}
+.chat-sec .bubble.me{align-self:flex-end;background:#A0563A;color:#fff;border-bottom-right-radius:4px}
+.chat-suggest span{display:block;margin-bottom:5px;font-size:8.5px;font-weight:700;letter-spacing:.04em;color:#A67B5B}
+.chat-suggest div{display:flex;flex-wrap:wrap;gap:4px}
+.chat-suggest i{font-style:normal;font-size:9.5px;font-weight:500;padding:4px 9px;border-radius:999px;background:#fff;border:1px solid #EAE0D2;color:#5C3D2E}
+.chat-input{margin-top:auto;display:flex;align-items:center;gap:6px;padding:4px 4px 4px 12px;border-radius:18px;background:#fff;border:1px solid #EAE0D2;font-size:9.5px;color:#C4A789}
+.chat-input span{flex:1}
+.chat-input em{display:grid;place-items:center;font-style:normal}
+.chat-input .mic{color:#C4A789}
+.chat-input .send{width:26px;height:26px;border-radius:10px;background:#A0563A;color:#fff;box-shadow:0 3px 10px rgba(160,86,58,.3)}
+.chat-cards{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.chat-card{position:relative;display:grid;gap:8px;align-content:start;padding:24px 24px 26px;border-radius:22px;background:var(--surface);border:1px solid var(--line);box-shadow:0 14px 34px -22px rgba(58,42,32,.35);transition:transform .3s cubic-bezier(.16,.85,.2,1),box-shadow .3s ease}
+.chat-card:hover{transform:translateY(-4px);box-shadow:0 22px 40px -22px rgba(58,42,32,.45)}
+.chat-ic{display:grid;place-items:center;width:44px;height:44px;margin-bottom:6px;border-radius:14px;background:var(--accent-soft);color:var(--accent)}
+.chat-ic svg{width:22px;height:22px}
+.chat-no{position:absolute;top:22px;right:24px;font-family:var(--title,inherit);font-size:22px;font-weight:700;color:var(--dim)}
+.chat-card b{font-size:17.5px;font-weight:700;color:var(--ink);letter-spacing:-.02em}
+.chat-desc{font-size:14.5px;line-height:1.65;color:var(--ink-2)}
+.chat-phone-wrap{margin:0;justify-self:center;display:grid;gap:12px}.chat-example{text-align:right;font-size:13px;color:var(--ink-2)}
+@media (max-width:900px){.chat-grid{grid-template-columns:minmax(0,1fr)}.chat-cards{grid-template-columns:minmax(0,1fr)}}
 </style>
 </body>
 </html>
