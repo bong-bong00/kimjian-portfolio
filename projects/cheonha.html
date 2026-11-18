@@ -930,7 +930,7 @@ h1, h2, h3, h4, h5 { font-family: var(--title); font-weight: 500 !important; let
     new IntersectionObserver(function(entries){
       inside=entries[0].isIntersecting;stop();
       if(inside){
-        if(root.id==='lang')firstTimer=setTimeout(function(){if(Date.now()>=resumeAt&&!document.hidden)next();timer=setInterval(function(){if(Date.now()>=resumeAt&&!document.hidden)next();},delay);},1200);
+        if(root.id==='lang')firstTimer=setTimeout(function(){if(Date.now()>=resumeAt&&!document.hidden)next();timer=setInterval(function(){if(Date.now()>=resumeAt&&!document.hidden)next();},delay);},600);
         else timer=setInterval(function(){if(Date.now()>=resumeAt&&!document.hidden)next();},delay);
       }
     },{rootMargin:"0px 0px -"+Math.round(innerHeight*(root.id==='lang'?.2:.4))+"px 0px",threshold:0}).observe(root);
@@ -1183,7 +1183,7 @@ h1, h2, h3, h4, h5 { font-family: var(--title); font-weight: 500 !important; let
   var longLanguageText=["경복궁의 전각과 궁궐의 모습을 살펴보세요. 건물마다 다른 이름과 쓰임을 한국어로 읽으며, 지금 보고 있는 장소가 어떤 곳인지 차근차근 알아볼 수 있습니다. 유적의 이름만 확인하는 데서 끝나지 않고, 건축물과 주변 공간을 함께 보며 설명을 따라가 보세요. 현장에서 익숙하지 않은 이름이나 표현을 만나더라도 내가 편하게 읽는 언어로 내용을 이해할 수 있도록 구성했습니다.", "Explore the halls and courtyards of Gyeongbokgung Palace. Read the names and purposes of each space in English as you look around. The guide connects unfamiliar terms with the buildings in front of you, helping you understand the palace without switching to a translation tool. Spend less time searching and more time discovering its history.", "景福宮の建物や庭を、自分のペースで巡ってみましょう。建物の名前や空間の役割を日本語で確認しながら、目の前の景色と説明を見比べられます。難しい言葉はわかりやすく説明するので、翻訳のために立ち止まる必要はありません。歴史を知り、建物の細部にも目を向けてみてください。", "按照自己的节奏，探索景福宫的宫殿与庭院。您可以用中文了解建筑名称和各个空间的用途，将说明与眼前的景色联系起来。遇到陌生的名称或表达时，无需反复切换翻译工具，也能继续阅读。少一些查找与等待，多一些对建筑细节的观察，在游览中慢慢了解这座宫殿的历史。"];
   function flagLeft(n){var b=languageButtons[n];return b.offsetLeft-flagRail.clientWidth*.625+b.offsetWidth/2;}
   function centerFlag(n,animate){
-    cancelAnimationFrame(flagFrame);renderLanguage(Number(languageButtons[n].dataset.lang));flagMoving=true;flagCursor=n;var start=flagRail.scrollLeft,target=flagLeft(n),began=performance.now(),duration=animate&&!reduce?1050:0;
+    cancelAnimationFrame(flagFrame);renderLanguage(Number(languageButtons[n].dataset.lang));flagMoving=true;flagCursor=n;var start=flagRail.scrollLeft,target=flagLeft(n),began=performance.now(),duration=animate&&!reduce?650:0;
     function step(now){var p=duration?Math.min((now-began)/duration,1):1;var eased=p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;flagRail.scrollLeft=start+(target-start)*eased;
       if(p<1){flagFrame=requestAnimationFrame(step);}else{if(flagCursor>=8)flagCursor-=4;else if(flagCursor<4)flagCursor+=4;flagRail.scrollLeft=flagLeft(flagCursor);renderLanguage(Number(languageButtons[flagCursor].dataset.lang));requestAnimationFrame(function(){flagMoving=false;});}}
     flagFrame=requestAnimationFrame(step);
@@ -1193,7 +1193,7 @@ h1, h2, h3, h4, h5 { font-family: var(--title); font-weight: 500 !important; let
   languageButtons.forEach(function(b){b.addEventListener('click',function(){setLanguage(Number(b.dataset.lang),Number(b.dataset.flagPosition),true);});});
   flagRail.addEventListener('scroll',function(){if(flagMoving)return;clearTimeout(flagDebounce);flagDebounce=setTimeout(function(){var mid=flagRail.scrollLeft+flagRail.clientWidth/2,best=0,dist=Infinity;languageButtons.forEach(function(b,i){var d=Math.abs(b.offsetLeft+b.offsetWidth/2-mid);if(d<dist){dist=d;best=i;}});setLanguage(Number(languageButtons[best].dataset.lang),best,true);},180);},{passive:true});
   var flagsInitialized=false;
-  function initializeFlags(){if(flagsInitialized)return;flagsInitialized=true;setLanguage(0,4,false);requestAnimationFrame(function(){flagRail.classList.add('flags-ready');});autoCycle(document.getElementById('lang'),function(){setLanguage((languageIndex+1)%4,flagCursor+1,true);},4600);}
+  function initializeFlags(){if(flagsInitialized)return;flagsInitialized=true;setLanguage(0,4,false);requestAnimationFrame(function(){flagRail.classList.add('flags-ready');});autoCycle(document.getElementById('lang'),function(){setLanguage((languageIndex+1)%4,flagCursor+1,true);},2800);}
   if(document.readyState==='complete'){initializeFlags();}else{window.addEventListener('load',initializeFlags,{once:true});}
   var flagRailWidth=0;new ResizeObserver(function(){var width=flagRail.clientWidth;if(width!==flagRailWidth){flagRailWidth=width;if(flagsInitialized)centerFlag(flagCursor,false);}}).observe(flagRail);
 
