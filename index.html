@@ -192,11 +192,11 @@ footer a{text-decoration:none}
 .aw-grp:first-child{border-top:2px solid var(--ink)}
 .aw-nm{font-size:26px;font-weight:800;letter-spacing:-.035em;line-height:1.2;color:var(--nm,var(--sub))}
 .aw-grp.ploggo{--nm:#7FA300}.aw-grp.cheonha{--nm:var(--cheonha)}.aw-grp.alkong{--nm:var(--alkong)}.aw-grp.etc{--nm:#4C5664}
-.aw-cnt{display:block;margin-top:6px;font-size:13px;font-weight:500;color:var(--muted)}
+.aw-pill{display:inline-flex!important;align-items:center;margin-top:2px;padding:6px 14px!important;border-radius:999px!important;background:var(--c)!important;color:var(--on)!important;font-size:14px!important;font-weight:700!important;line-height:1.2}.aw-pill.etc{background:#E4E8EE!important;color:#4C5664!important}
 .aw-grp ul{list-style:none;margin:0;padding:0}
 .aw-grp li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:baseline;padding:6px 0}
 .aw-grp li b{font-size:17px;font-weight:500;line-height:1.5}
-.aw-who{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:6px;background:#F2F4F6;color:#4C5664;font-size:12px;font-weight:700;vertical-align:2px}
+.aw-who{display:inline-block;margin-right:8px;padding:2px 8px;border-radius:6px;background:#F2F4F6;color:#4C5664;font-size:12px;font-weight:700;vertical-align:2px}
 .aw-grp small{display:block;margin-top:2px;font-size:14px;color:var(--sub)}
 .aw-grp time{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
 @media (max-width:760px){.aw-grp{grid-template-columns:minmax(0,1fr);gap:12px}.edu{grid-template-columns:minmax(0,1fr)!important}}
@@ -323,7 +323,7 @@ const toolIcons = {Figma:"figma.svg", "Figma AI":"figma.svg", Claude:"claude.svg
 $("tool-list").innerHTML = TOOLS.map(t => `
   <article class="tool"><h3>${esc(t.t)}</h3><div class="chips">${t.chips.map(c => `<span><img src="assets/tool-icons/${toolIcons[c]}" alt="" aria-hidden="true">${esc(c)}</span>`).join("")}</div></article>`).join("");
 
-$("timeline").innerHTML = AWARDS.map(g => `<div class="aw-grp${g.k ? " " + esc(g.k) : " etc"}"><div><div class="aw-nm">${esc(g.k ? P[g.k].name : g.label)}</div><span class="aw-cnt">${g.items.length}건</span></div><ul>${g.items.map(([d,t,sub,who]) => `<li><div><b>${esc(t)}</b>${who ? `<span class="aw-who">${esc(who)}</span>` : ""}${sub ? `<small>${esc(sub)}</small>` : ""}</div><time>${esc(d)}</time></li>`).join("")}</ul></div>`).join("");
+$("timeline").innerHTML = AWARDS.map(g => `<div class="aw-grp${g.k ? " " + esc(g.k) : " etc"}"><div>${g.k ? `<span class="pt aw-pill" style="${col(g.k)}">${esc(P[g.k].name)}</span>` : `<span class="pt aw-pill etc">${esc(g.label)}</span>`}</div><ul>${g.items.map(([d,t,sub,who]) => `<li><div>${who ? `<span class="aw-who">${esc(who)}</span>` : ""}<b>${esc(t)}</b>${sub ? `<small>${esc(sub)}</small>` : ""}</div><time>${esc(d)}</time></li>`).join("")}</ul></div>`).join("");
 $("edu").innerHTML = EDU.map(([d,s,m]) => `<div class="e"><time>${esc(d)}</time><b>${esc(s)}</b><span>${esc(m)}</span></div>`).join("");
 </script>
 
