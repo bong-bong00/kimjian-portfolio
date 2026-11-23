@@ -184,6 +184,7 @@ footer a{text-decoration:none}
 </style>
 <link rel="stylesheet" href="assets/fonts/app/gothic-a1.css">
 <link rel="stylesheet" href="editorial.css">
+<style>.ti-sub{display:block;margin-top:4px;font-size:14px;line-height:1.55;color:var(--sub)}</style>
 <style>.work-award{display:flex;align-items:center;gap:6px;margin-top:6px;font-style:normal;font-size:13.5px;font-weight:700;line-height:1.5;color:#1d1d1f}.work-award::before{content:"";flex:none;width:16px;height:16px;background:url(icons/trophy.png) center/contain no-repeat}</style>
 
 <header class="nav">
@@ -258,6 +259,7 @@ const TOOLS = [
 ];
 
 const AWARDS = [
+  ["2026.11", "캡스톤 디자인 경진대회 장려상 (한국폴리텍II대학 산학협력단 주최)", "", "팀", "스마트제조 현장 외국인 근로자를 위한 멀티모달 AI 소통 훈련 플랫폼 개발"],
   ["2026.11", "ACK 2026 학부생 논문경진대회 논문 채택 · 구두 발표 (공동저자)", "ploggo"],
   ["2026.04", "2026 한이음 드림업 사업 선정 (창의도전형)", "ploggo"],
   ["2026.04", "2026 관광데이터 활용 공모전 선정", "cheonha"],
@@ -302,7 +304,7 @@ const toolIcons = {Figma:"figma.svg", "Figma AI":"figma.svg", Claude:"claude.svg
 $("tool-list").innerHTML = TOOLS.map(t => `
   <article class="tool"><h3>${esc(t.t)}</h3><div class="chips">${t.chips.map(c => `<span><img src="assets/tool-icons/${toolIcons[c]}" alt="" aria-hidden="true">${esc(c)}</span>`).join("")}</div></article>`).join("");
 
-$("timeline").innerHTML = AWARDS.map(([d,t,k]) => `<div class="ti"><time>${esc(d)}</time><div><b>${esc(t)}</b>${k ? `<span class="pt" style="${col(k)}">${esc(P[k].name)}</span>` : `<span class="pt etc">개인</span>`}</div></div>`).join("");
+$("timeline").innerHTML = AWARDS.map(([d,t,k,lb,sub]) => `<div class="ti"><time>${esc(d)}</time><div><b>${esc(t)}</b>${sub ? `<span class="ti-sub">${esc(sub)}</span>` : ""}${k ? `<span class="pt" style="${col(k)}">${esc(P[k].name)}</span>` : `<span class="pt etc">${esc(lb || "개인")}</span>`}</div></div>`).join("");
 $("edu").innerHTML = EDU.map(([d,s,m]) => `<div class="e"><time>${esc(d)}</time><b>${esc(s)}</b><span>${esc(m)}</span></div>`).join("");
 </script>
 
