@@ -184,16 +184,23 @@ footer a{text-decoration:none}
 </style>
 <link rel="stylesheet" href="assets/fonts/app/gothic-a1.css">
 <link rel="stylesheet" href="editorial.css">
-<style>/* 수상: 프로젝트별 카드(학력 카드와 같은 회색·둥글기). 수상이 많은 묶음은 넓게 */
-#timeline{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-.ti-group{padding:22px 24px 14px;border-radius:24px;background:#f4f6f5;min-width:0}.ti-group:first-child{grid-column:1/-1}
-.ti-group>.pt{display:inline-flex;align-items:center;margin:0 0 10px;padding:5px 12px;border-radius:999px;background:var(--c)!important;color:var(--on)!important;font-size:12.5px;font-weight:700;line-height:1.2}
-.ti-group>.pt.etc{background:#E4E8EE!important;color:#4C5664!important}
-.ti-group .ti{grid-template-columns:72px minmax(0,1fr)!important;gap:14px!important;border-top:0!important;padding:4px 0 8px!important}
-.ti-group .ti b{font-size:16px;font-weight:500;line-height:1.5}
-.ti-group:not(:first-child) .ti{grid-template-columns:minmax(0,1fr)!important;gap:2px!important}
-@media (max-width:560px){#timeline{grid-template-columns:minmax(0,1fr)}.ti-group .ti{grid-template-columns:minmax(0,1fr)!important;gap:2px!important}}
-.ti-sub{display:block;margin-top:4px;font-size:14px;line-height:1.55;color:var(--sub)}</style>
+<style>/* 수상: 왼쪽에 프로젝트 이름(대표색), 오른쪽에 상. 학력은 수상 아래 두 칸 */
+.exp{grid-template-columns:minmax(0,1fr)!important;gap:56px!important}
+.edu{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px!important}.edu-h{grid-column:1/-1}
+#timeline{display:block;padding:0;background:none;box-shadow:none;border-radius:0}
+.aw-grp{display:grid;grid-template-columns:240px minmax(0,1fr);gap:28px;padding:30px 0;border-top:1px solid var(--line)}
+.aw-grp:first-child{border-top:2px solid var(--ink)}
+.aw-nm{font-size:26px;font-weight:800;letter-spacing:-.035em;line-height:1.2;color:var(--nm,var(--sub))}
+.aw-grp.ploggo{--nm:#7FA300}.aw-grp.cheonha{--nm:var(--cheonha)}.aw-grp.alkong{--nm:var(--alkong)}.aw-grp.etc{--nm:#4C5664}
+.aw-cnt{display:block;margin-top:6px;font-size:13px;font-weight:500;color:var(--muted)}
+.aw-grp ul{list-style:none;margin:0;padding:0}
+.aw-grp li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:baseline;padding:6px 0}
+.aw-grp li b{font-size:17px;font-weight:500;line-height:1.5}
+.aw-who{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:6px;background:#F2F4F6;color:#4C5664;font-size:12px;font-weight:700;vertical-align:2px}
+.aw-grp small{display:block;margin-top:2px;font-size:14px;color:var(--sub)}
+.aw-grp time{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+@media (max-width:760px){.aw-grp{grid-template-columns:minmax(0,1fr);gap:12px}.edu{grid-template-columns:minmax(0,1fr)!important}}
+</style>
 <style>.work-award{display:flex;align-items:center;gap:6px;margin-top:6px;font-style:normal;font-size:13.5px;font-weight:700;line-height:1.5;color:#1d1d1f}.work-award::before{content:"";flex:none;width:16px;height:16px;background:url(icons/trophy.png) center/contain no-repeat}</style>
 
 <header class="nav">
@@ -268,15 +275,16 @@ const TOOLS = [
 ];
 
 const AWARDS = [
-  /* 같은 프로젝트로 받은 상끼리 묶고, 묶음은 중요도 순 */
+  /* 같은 프로젝트로 받은 상끼리 묶고, 묶음은 중요도 순. 기타 묶음은 항목마다 팀/개인 표시 */
   { k: "ploggo", items: [
     ["2025.07", "제11회 인천광역시 공공데이터 활용 경진대회 우수상"],
     ["2026.04", "2026 한이음 드림업 사업 선정 (창의도전형)"],
     ["2026.11", "ACK 2026 학부생 논문경진대회 논문 채택 · 구두 발표 (공동저자)"] ] },
   { k: "cheonha", items: [ ["2026.04", "2026 관광데이터 활용 공모전 선정"] ] },
   { k: "alkong", items: [ ["2026.03", "제6회 전국 대학교 이그나이트 스토리텔링 경진대회 입상"] ] },
-  { label: "팀 프로젝트", items: [ ["2026.11", "캡스톤 디자인 경진대회 장려상", "스마트제조 현장 외국인 근로자를 위한 멀티모달 AI 소통 훈련 플랫폼 개발"] ] },
-  { label: "개인", items: [ ["2025.05", "AI로 만드는 인천 미래 공모전 참가"] ] }
+  { label: "기타", items: [
+    ["2026.11", "캡스톤 디자인 경진대회 장려상", "스마트제조 현장 외국인 근로자를 위한 멀티모달 AI 소통 훈련 플랫폼 개발", "팀"],
+    ["2025.05", "AI로 만드는 인천 미래 공모전 참가", "", "개인"] ] }
 ];
 
 const EDU = [
@@ -315,7 +323,7 @@ const toolIcons = {Figma:"figma.svg", "Figma AI":"figma.svg", Claude:"claude.svg
 $("tool-list").innerHTML = TOOLS.map(t => `
   <article class="tool"><h3>${esc(t.t)}</h3><div class="chips">${t.chips.map(c => `<span><img src="assets/tool-icons/${toolIcons[c]}" alt="" aria-hidden="true">${esc(c)}</span>`).join("")}</div></article>`).join("");
 
-$("timeline").innerHTML = AWARDS.map(g => `<div class="ti-group">${g.k ? `<span class="pt" style="${col(g.k)}">${esc(P[g.k].name)}</span>` : `<span class="pt etc">${esc(g.label)}</span>`}${g.items.map(([d,t,sub]) => `<div class="ti"><time>${esc(d)}</time><div><b>${esc(t)}</b>${sub ? `<span class="ti-sub">${esc(sub)}</span>` : ""}</div></div>`).join("")}</div>`).join("");
+$("timeline").innerHTML = AWARDS.map(g => `<div class="aw-grp${g.k ? " " + esc(g.k) : " etc"}"><div><div class="aw-nm">${esc(g.k ? P[g.k].name : g.label)}</div><span class="aw-cnt">${g.items.length}건</span></div><ul>${g.items.map(([d,t,sub,who]) => `<li><div><b>${esc(t)}</b>${who ? `<span class="aw-who">${esc(who)}</span>` : ""}${sub ? `<small>${esc(sub)}</small>` : ""}</div><time>${esc(d)}</time></li>`).join("")}</ul></div>`).join("");
 $("edu").innerHTML = EDU.map(([d,s,m]) => `<div class="e"><time>${esc(d)}</time><b>${esc(s)}</b><span>${esc(m)}</span></div>`).join("");
 </script>
 
