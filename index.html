@@ -184,7 +184,7 @@ footer a{text-decoration:none}
 </style>
 <link rel="stylesheet" href="assets/fonts/app/gothic-a1.css">
 <link rel="stylesheet" href="editorial.css">
-<style>.ti-sub{display:block;margin-top:4px;font-size:14px;line-height:1.55;color:var(--sub)}</style>
+<style>.ti-group{padding:22px 0 8px;border-top:1px solid var(--line)}.ti-group:first-child{border-top:0}.ti-group>.pt{display:inline-flex;align-items:center;gap:6px;margin:0 0 6px;padding:5px 12px 5px 6px;border-radius:999px;background:var(--c)!important;color:var(--on)!important;font-size:13px;font-weight:700;line-height:1.2}.ti-group>.pt .app{width:18px;height:18px;border-radius:5px;box-shadow:none}.ti-group>.pt.etc{padding-left:12px;background:#F2F4F6!important;color:#6B7684!important}.ti-group .ti{border-top:0!important;padding:10px 0!important}.ti-group .ti b{font-size:16px}.ti-sub{display:block;margin-top:4px;font-size:14px;line-height:1.55;color:var(--sub)}</style>
 <style>.work-award{display:flex;align-items:center;gap:6px;margin-top:6px;font-style:normal;font-size:13.5px;font-weight:700;line-height:1.5;color:#1d1d1f}.work-award::before{content:"";flex:none;width:16px;height:16px;background:url(icons/trophy.png) center/contain no-repeat}</style>
 
 <header class="nav">
@@ -259,13 +259,15 @@ const TOOLS = [
 ];
 
 const AWARDS = [
-  ["2026.11", "캡스톤 디자인 경진대회 장려상 (한국폴리텍II대학 산학협력단 주최)", "", "팀", "스마트제조 현장 외국인 근로자를 위한 멀티모달 AI 소통 훈련 플랫폼 개발"],
-  ["2026.11", "ACK 2026 학부생 논문경진대회 논문 채택 · 구두 발표 (공동저자)", "ploggo"],
-  ["2026.04", "2026 한이음 드림업 사업 선정 (창의도전형)", "ploggo"],
-  ["2026.04", "2026 관광데이터 활용 공모전 선정", "cheonha"],
-  ["2026.03", "제6회 전국 대학교 이그나이트 스토리텔링 경진대회 입상", "alkong"],
-  ["2025.07", "제11회 인천광역시 공공데이터 활용 경진대회 우수상", "ploggo"],
-  ["2025.05", "AI로 만드는 인천 미래 공모전 참가", ""]
+  /* 같은 프로젝트로 받은 상끼리 묶고, 묶음은 중요도 순 */
+  { k: "ploggo", items: [
+    ["2025.07", "제11회 인천광역시 공공데이터 활용 경진대회 우수상"],
+    ["2026.04", "2026 한이음 드림업 사업 선정 (창의도전형)"],
+    ["2026.11", "ACK 2026 학부생 논문경진대회 논문 채택 · 구두 발표 (공동저자)"] ] },
+  { k: "cheonha", items: [ ["2026.04", "2026 관광데이터 활용 공모전 선정"] ] },
+  { k: "alkong", items: [ ["2026.03", "제6회 전국 대학교 이그나이트 스토리텔링 경진대회 입상"] ] },
+  { label: "팀 프로젝트", items: [ ["2026.11", "캡스톤 디자인 경진대회 장려상", "스마트제조 현장 외국인 근로자를 위한 멀티모달 AI 소통 훈련 플랫폼 개발"] ] },
+  { label: "개인", items: [ ["2025.05", "AI로 만드는 인천 미래 공모전 참가"] ] }
 ];
 
 const EDU = [
@@ -304,7 +306,7 @@ const toolIcons = {Figma:"figma.svg", "Figma AI":"figma.svg", Claude:"claude.svg
 $("tool-list").innerHTML = TOOLS.map(t => `
   <article class="tool"><h3>${esc(t.t)}</h3><div class="chips">${t.chips.map(c => `<span><img src="assets/tool-icons/${toolIcons[c]}" alt="" aria-hidden="true">${esc(c)}</span>`).join("")}</div></article>`).join("");
 
-$("timeline").innerHTML = AWARDS.map(([d,t,k,lb,sub]) => `<div class="ti"><time>${esc(d)}</time><div><b>${esc(t)}</b>${sub ? `<span class="ti-sub">${esc(sub)}</span>` : ""}${k ? `<span class="pt" style="${col(k)}">${esc(P[k].name)}</span>` : `<span class="pt etc">${esc(lb || "개인")}</span>`}</div></div>`).join("");
+$("timeline").innerHTML = AWARDS.map(g => `<div class="ti-group">${g.k ? `<span class="pt" style="${col(g.k)}">${icon(g.k)}${esc(P[g.k].name)}</span>` : `<span class="pt etc">${esc(g.label)}</span>`}${g.items.map(([d,t,sub]) => `<div class="ti"><time>${esc(d)}</time><div><b>${esc(t)}</b>${sub ? `<span class="ti-sub">${esc(sub)}</span>` : ""}</div></div>`).join("")}</div>`).join("");
 $("edu").innerHTML = EDU.map(([d,s,m]) => `<div class="e"><time>${esc(d)}</time><b>${esc(s)}</b><span>${esc(m)}</span></div>`).join("");
 </script>
 
