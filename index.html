@@ -189,7 +189,7 @@ footer a{text-decoration:none}
 .edu{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px!important}.edu-h{grid-column:1/-1}
 #timeline{display:block;padding:0;background:none;box-shadow:none;border-radius:0}
 .aw-grp{display:grid;grid-template-columns:240px minmax(0,1fr);gap:28px;padding:30px 0;border-top:1px solid var(--line)}
-.aw-grp:first-child{border-top:2px solid var(--ink)}
+.aw-grp:first-child{border-top:0;padding-top:4px}.aw-h{margin-bottom:18px!important}
 .aw-nm{font-size:26px;font-weight:800;letter-spacing:-.035em;line-height:1.2;color:var(--nm,var(--sub))}
 .aw-grp.ploggo{--nm:#7FA300}.aw-grp.cheonha{--nm:var(--cheonha)}.aw-grp.alkong{--nm:var(--alkong)}.aw-grp.etc{--nm:#4C5664}
 .aw-pill{display:inline-flex!important;align-items:center;margin-top:2px;padding:9px 20px!important;border-radius:999px!important;background:var(--c)!important;color:var(--on)!important;font-size:18px!important;font-weight:700!important;line-height:1.2}.aw-pill.etc{background:#E4E8EE!important;color:#4C5664!important}
@@ -238,7 +238,10 @@ footer a{text-decoration:none}
   <section class="wrap sec" id="awards">
     <div class="sh"><span class="badge b-o"><img src="icons/trophy.png" alt=""></span><span class="section-index">04</span><h2><img class="section-pictogram" src="icons/trophy.png" alt="">차근차근 쌓아 온 경험</h2></div>
     <div class="exp">
-      <div class="timeline" id="timeline"></div>
+      <div class="awards-col">
+        <div class="edu-h aw-h">수상</div>
+        <div class="timeline" id="timeline"></div>
+      </div>
       <div class="edu">
         <div class="edu-h"><span class="badge b-p"><img src="icons/cap.png" alt=""></span>학력</div>
         <div id="edu" style="display:contents"></div>
