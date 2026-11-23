@@ -184,7 +184,16 @@ footer a{text-decoration:none}
 </style>
 <link rel="stylesheet" href="assets/fonts/app/gothic-a1.css">
 <link rel="stylesheet" href="editorial.css">
-<style>.ti-group{padding:22px 0 8px;border-top:1px solid var(--line)}.ti-group:first-child{border-top:0}.ti-group>.pt{display:inline-flex;align-items:center;gap:6px;margin:0 0 6px;padding:5px 12px 5px 6px;border-radius:999px;background:var(--c)!important;color:var(--on)!important;font-size:13px;font-weight:700;line-height:1.2}.ti-group>.pt .app{width:18px;height:18px;border-radius:5px;box-shadow:none}.ti-group>.pt.etc{padding-left:12px;background:#F2F4F6!important;color:#6B7684!important}.ti-group .ti{border-top:0!important;padding:10px 0!important}.ti-group .ti b{font-size:16px}.ti-sub{display:block;margin-top:4px;font-size:14px;line-height:1.55;color:var(--sub)}</style>
+<style>/* 수상: 프로젝트별 카드(학력 카드와 같은 회색·둥글기). 수상이 많은 묶음은 넓게 */
+#timeline{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.ti-group{padding:22px 24px 14px;border-radius:24px;background:#f4f6f5;min-width:0}.ti-group:first-child{grid-column:1/-1}
+.ti-group>.pt{display:inline-flex;align-items:center;margin:0 0 10px;padding:5px 12px;border-radius:999px;background:var(--c)!important;color:var(--on)!important;font-size:12.5px;font-weight:700;line-height:1.2}
+.ti-group>.pt.etc{background:#E4E8EE!important;color:#4C5664!important}
+.ti-group .ti{grid-template-columns:72px minmax(0,1fr)!important;gap:14px!important;border-top:0!important;padding:4px 0 8px!important}
+.ti-group .ti b{font-size:16px;font-weight:500;line-height:1.5}
+.ti-group:not(:first-child) .ti{grid-template-columns:minmax(0,1fr)!important;gap:2px!important}
+@media (max-width:560px){#timeline{grid-template-columns:minmax(0,1fr)}.ti-group .ti{grid-template-columns:minmax(0,1fr)!important;gap:2px!important}}
+.ti-sub{display:block;margin-top:4px;font-size:14px;line-height:1.55;color:var(--sub)}</style>
 <style>.work-award{display:flex;align-items:center;gap:6px;margin-top:6px;font-style:normal;font-size:13.5px;font-weight:700;line-height:1.5;color:#1d1d1f}.work-award::before{content:"";flex:none;width:16px;height:16px;background:url(icons/trophy.png) center/contain no-repeat}</style>
 
 <header class="nav">
@@ -306,7 +315,7 @@ const toolIcons = {Figma:"figma.svg", "Figma AI":"figma.svg", Claude:"claude.svg
 $("tool-list").innerHTML = TOOLS.map(t => `
   <article class="tool"><h3>${esc(t.t)}</h3><div class="chips">${t.chips.map(c => `<span><img src="assets/tool-icons/${toolIcons[c]}" alt="" aria-hidden="true">${esc(c)}</span>`).join("")}</div></article>`).join("");
 
-$("timeline").innerHTML = AWARDS.map(g => `<div class="ti-group">${g.k ? `<span class="pt" style="${col(g.k)}">${icon(g.k)}${esc(P[g.k].name)}</span>` : `<span class="pt etc">${esc(g.label)}</span>`}${g.items.map(([d,t,sub]) => `<div class="ti"><time>${esc(d)}</time><div><b>${esc(t)}</b>${sub ? `<span class="ti-sub">${esc(sub)}</span>` : ""}</div></div>`).join("")}</div>`).join("");
+$("timeline").innerHTML = AWARDS.map(g => `<div class="ti-group">${g.k ? `<span class="pt" style="${col(g.k)}">${esc(P[g.k].name)}</span>` : `<span class="pt etc">${esc(g.label)}</span>`}${g.items.map(([d,t,sub]) => `<div class="ti"><time>${esc(d)}</time><div><b>${esc(t)}</b>${sub ? `<span class="ti-sub">${esc(sub)}</span>` : ""}</div></div>`).join("")}</div>`).join("");
 $("edu").innerHTML = EDU.map(([d,s,m]) => `<div class="e"><time>${esc(d)}</time><b>${esc(s)}</b><span>${esc(m)}</span></div>`).join("");
 </script>
 
